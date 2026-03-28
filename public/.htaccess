@@ -1,0 +1,37 @@
+# ============================================================
+# public/.htaccess
+# Apache rewrite rules for clean URL routing.
+#
+# All requests (except real files/directories) are funnelled
+# to public/index.php — the single application entry point.
+# ============================================================
+
+Options -MultiViews -Indexes
+Options +FollowSymLinks
+
+# Enable the rewrite engine
+RewriteEngine On
+
+# ── Security Headers ────────────────────────────────────────
+Header always set X-Content-Type-Options  "nosniff"
+Header always set X-Frame-Options         "SAMEORIGIN"
+Header always set X-XSS-Protection        "1; mode=block"
+Header always set Referrer-Policy         "strict-origin-when-cross-origin"
+# Uncomment in production (requires HTTPS):
+# Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+# ── Deny direct access to sensitive files ───────────────────
+<FilesMatch "\.(env|log|ini|sh|bak|sql|git)$">
+    Require all denied
+</FilesMatch>
+
+# ── Block access to hidden directories (.git, .svn, etc.) ───
+RewriteRule (^|/)\.(?!well-known) - [F,L]
+
+# ── Route real files and directories to the file system ─────
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ── Route everything else through index.php ─────────────────
+RewriteRule ^ index.php [QSA,L]

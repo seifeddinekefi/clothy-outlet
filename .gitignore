@@ -1,0 +1,41 @@
+# Clothy Outlet - Git Ignore
+# ============================================================
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.*.local
+
+# Log files
+storage/logs/*.log
+storage/logs/mail.log
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependency directories
+/vendor/
+/node_modules/
+
+# Cache
+*.cache
+.php_cs.cache
+
+# Uploads (user content - keep structure only)
+uploads/*
+!uploads/.gitkeep
+
+# Session files
+*.sess
+
+# Compiled files
+*.compiled.php
