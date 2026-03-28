@@ -66,7 +66,7 @@ A modern, full-featured e-commerce platform built with PHP for fashion retail. C
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/clothy-outlet.git
+   git clone https://github.com/seifeddinekefi/clothy-outlet.git
    cd clothy-outlet
    ```
 
@@ -242,10 +242,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👤 Author
 
-**Your Name**
+**Seifeddine Kefi**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
+- GitHub: [@seifeddinekefi](https://github.com/seifeddinekefi)
+- LinkedIn: [Seifeddine Kefi](https://www.linkedin.com/in/seifeddinekefi/)
 
 ---
 
