@@ -2838,9 +2838,20 @@ $view->setLayout('');
                     });
             }
 
-            /* Reset quantity */
+            /* Reset quantity and set initial size */
             modalQty = 1;
             document.getElementById('qtyValue').textContent = '1';
+            
+            // Set first size button as active and update modalSize
+            var sizeContainer = document.getElementById('modalSizes');
+            var firstSizeBtn = sizeContainer.querySelector('.modal-size-btn');
+            if (firstSizeBtn) {
+                sizeContainer.querySelectorAll('.modal-size-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                firstSizeBtn.classList.add('active');
+                modalSize = firstSizeBtn.textContent.trim();
+            }
 
             modal.classList.add('open');
             document.body.style.overflow = 'hidden';
@@ -2928,8 +2939,26 @@ $view->setLayout('');
 
         function addToCartFromModal() {
             var name = document.getElementById('modalName').textContent;
+            var sizeToUse = modalSize;
+            
+            // If no size was selected, try to get the first active size button
+            if (!sizeToUse) {
+                var activeBtn = document.querySelector('#modalSizes .modal-size-btn.active');
+                if (activeBtn) {
+                    sizeToUse = activeBtn.textContent.trim();
+                }
+            }
+            
+            // If still no size, get the first available size button
+            if (!sizeToUse) {
+                var firstBtn = document.querySelector('#modalSizes .modal-size-btn');
+                if (firstBtn) {
+                    sizeToUse = firstBtn.textContent.trim();
+                }
+            }
+            
             closeQuickView();
-            addToCart(name + (modalQty > 1 ? ' \u00d7' + modalQty : ''), modalProductId, modalQty, modalSize);
+            addToCart(name + (modalQty > 1 ? ' \u00d7' + modalQty : ''), modalProductId, modalQty, sizeToUse);
         }
 
         /* ── Toast ───────────────────────────────────────────── */
