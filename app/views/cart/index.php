@@ -439,14 +439,16 @@ $_total    = $_subtotal + $_shipping;
 
             <?php foreach ($_items as $item):
               $p = $item['product'];
+              $_productImgSrc = productImg($p->primary_image ?? null);
+              $_hasImage = !empty($p->primary_image);
             ?>
               <div class="cart-item">
 
                 <!-- Thumbnail -->
-                <?php if (!empty($p->primary_image) && file_exists(BASE_PATH . '/public/assets/images/' . ltrim($p->primary_image, '/'))): ?>
+                <?php if ($_hasImage): ?>
                   <img
                     class="cart-item-img"
-                    src="<?= productImg($p->primary_image) ?>"
+                    src="<?= $_productImgSrc ?>"
                     alt="<?= htmlspecialchars($p->name) ?>"
                     loading="lazy">
                 <?php else: ?>
@@ -552,22 +554,22 @@ $_total    = $_subtotal + $_shipping;
 </div>
 
 <script>
-function updateQty(btn, delta) {
-  var form = btn.closest('form');
-  var hidden = form.querySelector('input[name="quantity"]');
-  var display = form.querySelector('.qty-val');
-  var newVal = Math.max(0, Math.min(99, parseInt(display.value) + delta));
-  hidden.value = newVal;
-  display.value = newVal;
-  form.submit();
-}
+  function updateQty(btn, delta) {
+    var form = btn.closest('form');
+    var hidden = form.querySelector('input[name="quantity"]');
+    var display = form.querySelector('.qty-val');
+    var newVal = Math.max(0, Math.min(99, parseInt(display.value) + delta));
+    hidden.value = newVal;
+    display.value = newVal;
+    form.submit();
+  }
 
-function syncQty(input) {
-  var form = input.closest('form');
-  var hidden = form.querySelector('input[name="quantity"]');
-  var newVal = Math.max(0, Math.min(99, parseInt(input.value) || 1));
-  hidden.value = newVal;
-  input.value = newVal;
-  form.submit();
-}
+  function syncQty(input) {
+    var form = input.closest('form');
+    var hidden = form.querySelector('input[name="quantity"]');
+    var newVal = Math.max(0, Math.min(99, parseInt(input.value) || 1));
+    hidden.value = newVal;
+    input.value = newVal;
+    form.submit();
+  }
 </script>

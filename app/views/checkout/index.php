@@ -472,11 +472,13 @@ $_customer = $customer ?? null;
                         <div class="co-sum-items">
                             <?php foreach ($_items as $item):
                                 $p = $item['product'];
+                                $_productImgSrc = productImg($p->primary_image ?? null);
+                                $_hasImage = !empty($p->primary_image);
                             ?>
                                 <div class="co-sum-item">
-                                    <?php if (!empty($p->primary_image) && file_exists(BASE_PATH . '/public/assets/images/' . ltrim($p->primary_image, '/'))): ?>
+                                    <?php if ($_hasImage): ?>
                                         <img class="co-sum-img"
-                                            src="<?= productImg($p->primary_image) ?>"
+                                            src="<?= $_productImgSrc ?>"
                                             alt="<?= htmlspecialchars($p->name) ?>">
                                     <?php else: ?>
                                         <div class="co-sum-img-ph">
