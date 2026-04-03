@@ -2308,7 +2308,7 @@ $view->setLayout('');
                         data-name="<?= htmlspecialchars($p->name) ?>"
                         data-price="<?= htmlspecialchars($_price) ?>"
                         data-orig="<?= htmlspecialchars($_orig) ?>"
-                        data-img="<?= htmlspecialchars(basename(productImg($p->primary_image ?? null))) ?>"
+                        data-img="<?= htmlspecialchars(productImg($p->primary_image ?? null)) ?>"
                         data-category="<?= htmlspecialchars($_cat) ?>"
                         onclick="openQuickView(this)"
                         role="button" tabindex="0">
@@ -2462,7 +2462,7 @@ $view->setLayout('');
                                 data-name="<?= htmlspecialchars($p->name) ?>"
                                 data-price="<?= htmlspecialchars($_price) ?>"
                                 data-orig="<?= htmlspecialchars($_orig) ?>"
-                                data-img="<?= htmlspecialchars(basename(productImg($p->primary_image ?? null))) ?>"
+                                data-img="<?= htmlspecialchars(productImg($p->primary_image ?? null)) ?>"
                                 onclick="openQuickView(this)"
                                 role="button" tabindex="0">
                                 <div class="product-card-img">
@@ -2739,9 +2739,8 @@ $view->setLayout('');
             var name = card.dataset.name || 'Product';
             var price = card.dataset.price || '';
             var orig = card.dataset.orig || '';
-            var img = card.dataset.img || 'blazer.svg';
+            var img = card.dataset.img || '<?= asset('images/products/blazer.jpg') ?>';
             modalProductId = parseInt(card.dataset.id || 0, 10);
-            var _imgBase = '<?= asset('images/products/') ?>';
 
             document.getElementById('modalName').textContent = name;
             document.getElementById('modalPrice').textContent = price;
@@ -2750,7 +2749,8 @@ $view->setLayout('');
             origEl.textContent = orig;
             origEl.style.display = orig ? '' : 'none';
 
-            document.getElementById('modalImgMainImg').src = _imgBase + img;
+            // Use the full image URL directly
+            document.getElementById('modalImgMainImg').src = img;
             document.getElementById('modalImgMainImg').alt = name;
 
             /* Build thumbnails - fetch from API if product ID available */
@@ -2758,7 +2758,7 @@ $view->setLayout('');
             thumbs.innerHTML = '';
 
             // Build initial thumbnail from card data
-            buildSingleThumb(thumbs, _imgBase + img);
+            buildSingleThumb(thumbs, img);
 
             // Try to fetch additional images from API
             if (modalProductId > 0) {
@@ -2769,8 +2769,16 @@ $view->setLayout('');
                             // Clear and rebuild with all images
                             thumbs.innerHTML = '';
                             images.forEach(function(imgData, i) {
-                                var imgPath = imgData.path.includes('/') ? imgData.path : 'images/products/' + imgData.path;
-                                var fullPath = '<?= rtrim(BASE_URL, '/') ?>/' + imgPath;
+                                // Build proper path for images
+                                var imgPath = imgData.path;
+                                var fullPath;
+                                if (imgPath.startsWith('uploads/')) {
+                                    fullPath = '<?= rtrim(BASE_URL, '/') ?>/' + imgPath;
+                                } else if (imgPath.startsWith('products/')) {
+                                    fullPath = '<?= rtrim(BASE_URL, '/') ?>/assets/images/' + imgPath;
+                                } else {
+                                    fullPath = '<?= rtrim(BASE_URL, '/') ?>/assets/images/products/' + imgPath;
+                                }
 
                                 var t = document.createElement('div');
                                 t.className = 'modal-img-thumb' + (i === 0 ? ' active' : '');
@@ -2790,22 +2798,49 @@ $view->setLayout('');
                             });
                             // Update main image to primary
                             var primaryImg = images.find(function(i) { return i.is_primary; }) || images[0];
-                            var primaryPath = primaryImg.path.includes('/') ? primaryImg.path : 'images/products/' + primaryImg.path;
-                            document.getElementById('modalImgMainImg').src = '<?= rtrim(BASE_URL, '/') ?>/' + primaryPath;
+                            var primaryPath = primaryImg.path;
+                            var primaryFullPath;
+                            if (primaryPath.startsWith('uploads/')) {
+                                primaryFullPath = '<?= rtrim(BASE_URL, '/') ?>/' + primaryPath;
+                            } else if (primaryPath.startsWith('products/')) {
+                                primaryFullPath = '<?= rtrim(BASE_URL, '/') ?>/assets/images/' + primaryPath;
+                            } else {
+                                primaryFullPath = '<?= rtrim(BASE_URL, '/') ?>/assets/images/products/' + primaryPath;
+                            }
+                            document.getElementById('modalImgMainImg').src = primaryFullPath;
                         }
                     })
                     .catch(function(err) {
                         console.log('Could not fetch product images:', err);
                     });
+
+                // Fetch available sizes for this product
+                fetch('<?= url('product') ?>/' + modalProductId + '/sizes')
+                    .then(function(response) { return response.json(); })
+                    .then(function(sizes) {
+                        var sizeContainer = document.getElementById('modalSizes');
+                        if (sizeContainer && sizes && sizes.length > 0) {
+                            sizeContainer.innerHTML = '';
+                            sizes.forEach(function(sizeData, i) {
+                                var btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'modal-size-btn' + (i === 0 ? ' active' : '');
+                                btn.textContent = sizeData.size;
+                                btn.onclick = function() { selectModalSize(btn); };
+                                sizeContainer.appendChild(btn);
+                            });
+                            // Set default to first available size
+                            modalSize = sizes[0].size;
+                        }
+                    })
+                    .catch(function(err) {
+                        console.log('Could not fetch product sizes:', err);
+                    });
             }
 
-            /* Reset quantity and size */
+            /* Reset quantity */
             modalQty = 1;
-            modalSize = 'M';
             document.getElementById('qtyValue').textContent = '1';
-            document.querySelectorAll('.modal-size-btn').forEach(function(b, i) {
-                b.classList.toggle('active', i === 2); /* default M */
-            });
 
             modal.classList.add('open');
             document.body.style.overflow = 'hidden';
@@ -2834,10 +2869,11 @@ $view->setLayout('');
         });
 
         /* ── Modal size & quantity ───────────────────────────── */
-        var modalSize = 'M'; /* default size */
+        var modalSize = ''; /* will be set when sizes load */
 
         function selectModalSize(btn) {
-            document.querySelectorAll('.modal-size-btn').forEach(function(b) {
+            var container = document.getElementById('modalSizes');
+            container.querySelectorAll('.modal-size-btn').forEach(function(b) {
                 b.classList.remove('active');
             });
             btn.classList.add('active');

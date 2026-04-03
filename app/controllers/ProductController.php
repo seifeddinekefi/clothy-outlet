@@ -123,4 +123,25 @@ class ProductController extends Controller
         }, $images));
         exit;
     }
+
+    /**
+     * API endpoint: returns JSON array of available sizes for a product.
+     */
+    public function sizes(string $id): void
+    {
+        $productId = (int) $id;
+        $sizeModel = new ProductSize();
+
+        $sizes = $sizeModel->findAvailable($productId);
+
+        header('Content-Type: application/json');
+        echo json_encode(array_map(function ($size) {
+            return [
+                'id'    => (int) $size->id,
+                'size'  => $size->size,
+                'stock' => (int) $size->stock,
+            ];
+        }, $sizes));
+        exit;
+    }
 }

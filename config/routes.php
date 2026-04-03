@@ -26,6 +26,7 @@ $router->get('/products',             'ProductController@index',    'products');
 $router->get('/products/{category}',  'ProductController@category', 'products.category');
 $router->get('/product/{id}',         'ProductController@show',     'product.show');
 $router->get('/product/{id}/images',  'ProductController@images',   'product.images');
+$router->get('/product/{id}/sizes',   'ProductController@sizes',    'product.sizes');
 $router->get('/search',               'ProductController@search',   'search');
 
 // ─── Cart Routes ─────────────────────────────────────────────
