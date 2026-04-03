@@ -113,17 +113,6 @@ A modern, full-featured e-commerce platform built with PHP for fashion retail. C
 
 ---
 
-## 🔑 Default Credentials
-
-### Admin Login
-
-- **Email:** `admin@clothyoutlet.com`
-- **Password:** `Admin@1234`
-
-> ⚠️ **Important:** Change these credentials immediately in production!
-
----
-
 ## 📁 Project Structure
 
 ```
