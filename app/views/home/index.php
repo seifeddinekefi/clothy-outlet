@@ -2770,12 +2770,12 @@ $view->setLayout('');
                                 return i.is_primary;
                             }) || images[0];
                             var primaryPath = primaryImg.path.includes('/') ? primaryImg.path : 'images/products/' + primaryImg.path;
-                            document.getElementById('modalImgMainImg').src = '<?= rtrim(APP_URL, '/') ?>/' + primaryPath;
+                            document.getElementById('modalImgMainImg').src = '<?= rtrim(BASE_URL, '/') ?>/' + primaryPath;
 
                             // Build thumbnails
                             images.forEach(function(imgData, i) {
                                 var imgPath = imgData.path.includes('/') ? imgData.path : 'images/products/' + imgData.path;
-                                var fullPath = '<?= rtrim(APP_URL, '/') ?>/' + imgPath;
+                                var fullPath = '<?= rtrim(BASE_URL, '/') ?>/' + imgPath;
 
                                 var t = document.createElement('div');
                                 t.className = 'modal-img-thumb' + (i === 0 ? ' active' : '');
