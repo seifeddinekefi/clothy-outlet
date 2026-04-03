@@ -32,6 +32,25 @@ class Product extends Model
     }
 
     /**
+     * Find a product by ID with its primary image.
+     * Useful for cart/checkout where we need the image.
+     */
+    public function findByIdWithImage(int $id): mixed
+    {
+        return $this->db->selectOne(
+            "SELECT p.*,
+                    c.name        AS category_name,
+                    pi.image_path AS primary_image
+               FROM `products`       p
+               LEFT JOIN `categories`     c  ON c.id         = p.category_id
+               LEFT JOIN `product_images` pi ON pi.product_id = p.id AND pi.is_primary = 1
+              WHERE p.id = :id
+              LIMIT 1",
+            [':id' => $id]
+        );
+    }
+
+    /**
      * Find a product by slug.
      */
     public function findBySlug(string $slug): mixed

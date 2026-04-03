@@ -91,9 +91,9 @@ class CartController extends Controller
         $cartRows     = $this->normalizeCart($raw);
 
         foreach ($cartRows as $row) {
-            // Use findById for cart display (doesn't filter by is_active)
+            // Use findByIdWithImage for cart display (includes primary image)
             // This ensures cart items show even if product was deactivated
-            $product = $productModel->findById((int) $row['product_id']);
+            $product = $productModel->findByIdWithImage((int) $row['product_id']);
             if (!$product) {
                 continue;
             }
