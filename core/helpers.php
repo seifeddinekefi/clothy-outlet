@@ -176,6 +176,18 @@ function productImg(?string $dbPath): string
     if (!$dbPath) {
         return $placeholder;
     }
+
+    // Check if this is an uploaded image (starts with 'uploads/')
+    if (str_starts_with($dbPath, 'uploads/')) {
+        $disk = BASE_PATH . '/public/' . ltrim($dbPath, '/');
+        if (file_exists($disk)) {
+            // Return URL to the uploads directory
+            return rtrim(BASE_URL, '/') . '/' . ltrim($dbPath, '/');
+        }
+        return $placeholder;
+    }
+
+    // Legacy: check in assets/images directory
     $disk = BASE_PATH . '/public/assets/images/' . ltrim($dbPath, '/');
     return file_exists($disk)
         ? asset('images/' . ltrim($dbPath, '/'))
