@@ -10,5 +10,10 @@ Options -MultiViews
 RewriteEngine On
 
 # If the request is not already inside /public, redirect it there
-RewriteCond %{REQUEST_URI} !^/clothy/public/
-RewriteRule ^(.*)$ /clothy/public/$1 [L,R=301]
+# Local XAMPP path:
+# RewriteCond %{REQUEST_URI} !^/clothy/public/
+# RewriteRule ^(.*)$ /clothy/public/$1 [L,R=301]
+
+# Production (InfinityFree):
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]
