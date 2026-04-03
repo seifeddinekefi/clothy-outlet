@@ -116,6 +116,15 @@ $router->group(['prefix' => 'admin', 'middleware' => 'AdminMiddleware'], functio
     $router->post('/customers/edit/{id}',   'Admin\CustomerController@update',  'admin.customers.update');
     $router->post('/customers/delete/{id}', 'Admin\CustomerController@destroy', 'admin.customers.delete');
     $router->get('/customers/{id}',         'Admin\CustomerController@show',    'admin.customers.show');
+
+    // ── Coupons ─────────────────────────────────────────────
+    $router->get('/coupons',              'Admin\CouponController@index',   'admin.coupons');
+    $router->get('/coupons/create',       'Admin\CouponController@create',  'admin.coupons.create');
+    $router->post('/coupons/create',      'Admin\CouponController@store',   'admin.coupons.store');
+    $router->get('/coupons/edit/{id}',    'Admin\CouponController@edit',    'admin.coupons.edit');
+    $router->post('/coupons/edit/{id}',   'Admin\CouponController@update',  'admin.coupons.update');
+    $router->post('/coupons/delete/{id}', 'Admin\CouponController@destroy', 'admin.coupons.delete');
+
     // ── Settings ─────────────────────────────────────────
     $router->get('/settings',          'Admin\SettingsController@index',         'admin.settings');
     $router->post('/settings/store',   'Admin\SettingsController@updateStore',   'admin.settings.store');

@@ -119,10 +119,11 @@ class CartController extends Controller
     {
         $this->verifyCsrf();
 
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' ||
-            strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false ||
-            strpos($_SERVER['CONTENT_TYPE'] ?? '', 'application/x-www-form-urlencoded') !== false;
+        // Only treat as AJAX if X-Requested-With header is set OR Accept header wants JSON
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
+            (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false &&
+                strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html') === false);
 
         $productId = (int) ($_POST['product_id'] ?? 0);
         $quantity  = max(1, (int) ($_POST['quantity'] ?? 1));

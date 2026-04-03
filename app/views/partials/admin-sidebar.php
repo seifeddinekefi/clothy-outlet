@@ -27,7 +27,7 @@ function _sidebar_active(string $prefix, string $uri): string
 
     <nav class="sidebar-nav" role="navigation" aria-label="Admin navigation">
         <ul>
-            <li class="<?= _sidebar_active('/admin/dashboard', $_uri) ?: (_sidebar_active('/admin', $_uri) && !str_starts_with($_uri, '/admin/products') && !str_starts_with($_uri, '/admin/categories') && !str_starts_with($_uri, '/admin/orders') && !str_starts_with($_uri, '/admin/customers') && !str_starts_with($_uri, '/admin/settings') ? 'active' : '') ?>">
+            <li class="<?= _sidebar_active('/admin/dashboard', $_uri) ?: (_sidebar_active('/admin', $_uri) && !str_starts_with($_uri, '/admin/products') && !str_starts_with($_uri, '/admin/categories') && !str_starts_with($_uri, '/admin/orders') && !str_starts_with($_uri, '/admin/customers') && !str_starts_with($_uri, '/admin/coupons') && !str_starts_with($_uri, '/admin/settings') ? 'active' : '') ?>">
                 <a href="<?= url('admin') ?>">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="9" />
@@ -77,6 +77,18 @@ function _sidebar_active(string $prefix, string $uri): string
                         <path d="M16 3.13a4 4 0 010 7.75" />
                     </svg>
                     Customers
+                </a>
+            </li>
+            <li class="<?= _sidebar_active('/admin/coupons', $_uri) ?>">
+                <a href="<?= url('admin/coupons') ?>">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6" />
+                        <path d="M4 8V6a2 2 0 012-2h12a2 2 0 012 2v2" />
+                        <line x1="12" y1="4" x2="12" y2="20" />
+                        <path d="M8 12h.01" />
+                        <path d="M16 12h.01" />
+                    </svg>
+                    Coupons
                 </a>
             </li>
             <li class="<?= _sidebar_active('/admin/settings', $_uri) ?>">

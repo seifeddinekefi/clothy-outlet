@@ -82,4 +82,55 @@ class Coupon extends Model
 
         return max(0.0, min($discount, $subtotal));
     }
+
+    // ── CRUD Methods ──────────────────────────────────────────
+
+    public function findById(int $id): mixed
+    {
+        return $this->db->selectOne(
+            "SELECT * FROM `{$this->table}` WHERE `id` = :id LIMIT 1",
+            [':id' => $id]
+        );
+    }
+
+    public function findAll(): array
+    {
+        return $this->db->select(
+            "SELECT * FROM `{$this->table}` ORDER BY `created_at` DESC"
+        );
+    }
+
+    public function codeExists(string $code, ?int $excludeId = null): bool
+    {
+        $code = strtoupper(trim($code));
+        $sql = "SELECT COUNT(*) AS cnt FROM `{$this->table}` WHERE `code` = :code";
+        $params = [':code' => $code];
+
+        if ($excludeId !== null) {
+            $sql .= " AND `id` != :id";
+            $params[':id'] = $excludeId;
+        }
+
+        $row = $this->db->selectOne($sql, $params);
+        return ($row->cnt ?? 0) > 0;
+    }
+
+    public function createCoupon(array $data): string|false
+    {
+        $data['code'] = strtoupper(trim($data['code'] ?? ''));
+        return $this->insert($data);
+    }
+
+    public function updateCoupon(int $id, array $data): bool
+    {
+        if (isset($data['code'])) {
+            $data['code'] = strtoupper(trim($data['code']));
+        }
+        return $this->update($data, '`id` = :id', [':id' => $id]);
+    }
+
+    public function deleteCoupon(int $id): bool
+    {
+        return $this->delete('`id` = :id', [':id' => $id]);
+    }
 }

@@ -65,8 +65,8 @@ INSERT INTO `roles` (`id`, `name`, `permissions`) VALUES
 -- password: Admin@1234
 -- ==============================================================
 INSERT INTO `admins` (`id`, `name`, `email`, `password`, `role_id`, `is_active`) VALUES
-(1, 'Super Admin',   'admin@clothyoutlet.com',   '$2y$12$FD9WkYWFevXSZ5TVRgre5uRBUpiXfXp3FN6iIsa8TkT1WrQYIFCai', 1, 1),
-(2, 'Store Manager', 'manager@clothyoutlet.com', '$2y$12$FD9WkYWFevXSZ5TVRgre5uRBUpiXfXp3FN6iIsa8TkT1WrQYIFCai', 2, 1);
+(1, 'Super Admin',   'admin@clothy.com',   '$2y$12$FD9WkYWFevXSZ5TVRgre5uRBUpiXfXp3FN6iIsa8TkT1WrQYIFCai', 1, 1),
+(2, 'Store Manager', 'manager@clothy.com', '$2y$12$FD9WkYWFevXSZ5TVRgre5uRBUpiXfXp3FN6iIsa8TkT1WrQYIFCai', 2, 1);
 
 
 -- ==============================================================
