@@ -2750,32 +2750,64 @@ $view->setLayout('');
             origEl.textContent = orig;
             origEl.style.display = orig ? '' : 'none';
 
+            // Set initial main image
             document.getElementById('modalImgMainImg').src = _imgBase + img;
             document.getElementById('modalImgMainImg').alt = name;
 
-            /* Build 3 thumbnails */
+            /* Fetch product images from API */
             var thumbs = document.getElementById('modalThumbs');
-            var variants = [img, 'tee.jpg', 'shorts.jpg'];
             thumbs.innerHTML = '';
-            variants.forEach(function(v, i) {
-                var t = document.createElement('div');
-                t.className = 'modal-img-thumb' + (i === 0 ? ' active' : '');
-                var ti = document.createElement('img');
-                ti.src = _imgBase + v;
-                ti.alt = '';
-                ti.width = 60;
-                ti.height = 75;
-                ti.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;';
-                t.appendChild(ti);
-                t.addEventListener('click', function() {
-                    thumbs.querySelectorAll('.modal-img-thumb').forEach(function(x) {
-                        x.classList.remove('active');
+
+            if (modalProductId > 0) {
+                fetch('<?= url('product') ?>/' + modalProductId + '/images')
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(images) {
+                        if (images && images.length > 0) {
+                            // Set main image to primary
+                            var primaryImg = images.find(function(i) {
+                                return i.is_primary;
+                            }) || images[0];
+                            var primaryPath = primaryImg.path.includes('/') ? primaryImg.path : 'images/products/' + primaryImg.path;
+                            document.getElementById('modalImgMainImg').src = '<?= rtrim(APP_URL, '/') ?>/' + primaryPath;
+
+                            // Build thumbnails
+                            images.forEach(function(imgData, i) {
+                                var imgPath = imgData.path.includes('/') ? imgData.path : 'images/products/' + imgData.path;
+                                var fullPath = '<?= rtrim(APP_URL, '/') ?>/' + imgPath;
+
+                                var t = document.createElement('div');
+                                t.className = 'modal-img-thumb' + (i === 0 ? ' active' : '');
+                                var ti = document.createElement('img');
+                                ti.src = fullPath;
+                                ti.alt = '';
+                                ti.width = 60;
+                                ti.height = 75;
+                                ti.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;';
+                                t.appendChild(ti);
+                                t.addEventListener('click', function() {
+                                    thumbs.querySelectorAll('.modal-img-thumb').forEach(function(x) {
+                                        x.classList.remove('active');
+                                    });
+                                    t.classList.add('active');
+                                    document.getElementById('modalImgMainImg').src = fullPath;
+                                });
+                                thumbs.appendChild(t);
+                            });
+                        } else {
+                            // Fallback: show single image if no images in DB
+                            buildSingleThumb(thumbs, _imgBase + img);
+                        }
+                    })
+                    .catch(function() {
+                        // On error, show single thumbnail
+                        buildSingleThumb(thumbs, _imgBase + img);
                     });
-                    t.classList.add('active');
-                    document.getElementById('modalImgMainImg').src = _imgBase + v;
-                });
-                thumbs.appendChild(t);
-            });
+            } else {
+                // No product ID, show single thumbnail
+                buildSingleThumb(thumbs, _imgBase + img);
+            }
 
             /* Reset quantity and size */
             modalQty = 1;
@@ -2787,6 +2819,19 @@ $view->setLayout('');
 
             modal.classList.add('open');
             document.body.style.overflow = 'hidden';
+        }
+
+        function buildSingleThumb(thumbs, imgSrc) {
+            var t = document.createElement('div');
+            t.className = 'modal-img-thumb active';
+            var ti = document.createElement('img');
+            ti.src = imgSrc;
+            ti.alt = '';
+            ti.width = 60;
+            ti.height = 75;
+            ti.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;';
+            t.appendChild(ti);
+            thumbs.appendChild(t);
         }
 
         function closeQuickView() {

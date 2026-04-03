@@ -102,4 +102,25 @@ class ProductController extends Controller
     {
         $this->index();
     }
+
+    /**
+     * API endpoint: returns JSON array of all images for a product.
+     */
+    public function images(string $id): void
+    {
+        $productId = (int) $id;
+        $imageModel = new ProductImage();
+
+        $images = $imageModel->findByProduct($productId);
+
+        header('Content-Type: application/json');
+        echo json_encode(array_map(function ($img) {
+            return [
+                'id'         => (int) $img->id,
+                'path'       => $img->image_path,
+                'is_primary' => (bool) $img->is_primary,
+            ];
+        }, $images));
+        exit;
+    }
 }
