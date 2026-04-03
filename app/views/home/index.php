@@ -2750,29 +2750,24 @@ $view->setLayout('');
             origEl.textContent = orig;
             origEl.style.display = orig ? '' : 'none';
 
-            // Set initial main image
             document.getElementById('modalImgMainImg').src = _imgBase + img;
             document.getElementById('modalImgMainImg').alt = name;
 
-            /* Fetch product images from API */
+            /* Build thumbnails - fetch from API if product ID available */
             var thumbs = document.getElementById('modalThumbs');
             thumbs.innerHTML = '';
 
+            // Build initial thumbnail from card data
+            buildSingleThumb(thumbs, _imgBase + img);
+
+            // Try to fetch additional images from API
             if (modalProductId > 0) {
                 fetch('<?= url('product') ?>/' + modalProductId + '/images')
-                    .then(function(response) {
-                        return response.json();
-                    })
+                    .then(function(response) { return response.json(); })
                     .then(function(images) {
-                        if (images && images.length > 0) {
-                            // Set main image to primary
-                            var primaryImg = images.find(function(i) {
-                                return i.is_primary;
-                            }) || images[0];
-                            var primaryPath = primaryImg.path.includes('/') ? primaryImg.path : 'images/products/' + primaryImg.path;
-                            document.getElementById('modalImgMainImg').src = '<?= rtrim(BASE_URL, '/') ?>/' + primaryPath;
-
-                            // Build thumbnails
+                        if (images && images.length > 1) {
+                            // Clear and rebuild with all images
+                            thumbs.innerHTML = '';
                             images.forEach(function(imgData, i) {
                                 var imgPath = imgData.path.includes('/') ? imgData.path : 'images/products/' + imgData.path;
                                 var fullPath = '<?= rtrim(BASE_URL, '/') ?>/' + imgPath;
@@ -2787,26 +2782,21 @@ $view->setLayout('');
                                 ti.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;';
                                 t.appendChild(ti);
                                 t.addEventListener('click', function() {
-                                    thumbs.querySelectorAll('.modal-img-thumb').forEach(function(x) {
-                                        x.classList.remove('active');
-                                    });
+                                    thumbs.querySelectorAll('.modal-img-thumb').forEach(function(x) { x.classList.remove('active'); });
                                     t.classList.add('active');
                                     document.getElementById('modalImgMainImg').src = fullPath;
                                 });
                                 thumbs.appendChild(t);
                             });
-                        } else {
-                            // Fallback: show single image if no images in DB
-                            buildSingleThumb(thumbs, _imgBase + img);
+                            // Update main image to primary
+                            var primaryImg = images.find(function(i) { return i.is_primary; }) || images[0];
+                            var primaryPath = primaryImg.path.includes('/') ? primaryImg.path : 'images/products/' + primaryImg.path;
+                            document.getElementById('modalImgMainImg').src = '<?= rtrim(BASE_URL, '/') ?>/' + primaryPath;
                         }
                     })
-                    .catch(function() {
-                        // On error, show single thumbnail
-                        buildSingleThumb(thumbs, _imgBase + img);
+                    .catch(function(err) {
+                        console.log('Could not fetch product images:', err);
                     });
-            } else {
-                // No product ID, show single thumbnail
-                buildSingleThumb(thumbs, _imgBase + img);
             }
 
             /* Reset quantity and size */
@@ -2875,7 +2865,9 @@ $view->setLayout('');
             fetch('<?= url('cart/add') ?>', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 body: 'product_id=' + encodeURIComponent(id) +
                     '&quantity=' + encodeURIComponent(qty) +
