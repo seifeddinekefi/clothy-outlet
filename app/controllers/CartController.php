@@ -142,7 +142,11 @@ class CartController extends Controller
 
         $sizeModel = new ProductSize();
         $availableSizes = $sizeModel->findAvailable($productId);
-        if (!empty($availableSizes) && $size === null) {
+        
+        // If no sizes defined for this product, allow adding without size
+        $productHasSizes = !empty($availableSizes);
+        
+        if ($productHasSizes && $size === null) {
             if ($isAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'message' => 'Please select a size.']);
@@ -152,7 +156,8 @@ class CartController extends Controller
             $this->redirectBack(url('product/' . $productId));
         }
 
-        if ($size !== null && !$sizeModel->isAvailable($productId, $size, $quantity)) {
+        // Only validate size if product has sizes defined AND a size was provided
+        if ($productHasSizes && $size !== null && !$sizeModel->isAvailable($productId, $size, $quantity)) {
             if ($isAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'message' => 'Selected size is unavailable.']);

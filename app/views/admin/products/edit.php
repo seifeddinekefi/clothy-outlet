@@ -95,6 +95,31 @@
                     </label>
                 </div>
 
+                <?php 
+                // Build a lookup array for existing sizes
+                $sizeStock = [];
+                if (!empty($sizes)) {
+                    foreach ($sizes as $s) {
+                        $sizeStock[$s->size] = (int) $s->stock;
+                    }
+                }
+                ?>
+                <div class="form-group">
+                    <label>Available Sizes <span class="hint">(enter stock quantity for each)</span></label>
+                    <div class="size-grid">
+                        <?php foreach (['XS', 'S', 'M', 'L', 'XL', 'XXL'] as $sz): ?>
+                            <div class="size-input-group">
+                                <label for="size_<?= $sz ?>"><?= $sz ?></label>
+                                <input type="number" id="size_<?= $sz ?>" name="sizes[<?= $sz ?>]"
+                                    class="form-control form-control-sm"
+                                    value="<?= e($_POST['sizes'][$sz] ?? $sizeStock[$sz] ?? '0') ?>"
+                                    min="0" step="1" placeholder="0">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="form-hint">Set stock quantity > 0 to make a size available. Set to 0 to hide that size.</p>
+                </div>
+
                 <!-- Existing images -->
                 <?php if (!empty($images)): ?>
                     <div class="form-group">

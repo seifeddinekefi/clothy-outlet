@@ -97,6 +97,22 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Available Sizes <span class="hint">(enter stock quantity for each)</span></label>
+                    <div class="size-grid">
+                        <?php foreach (['XS', 'S', 'M', 'L', 'XL', 'XXL'] as $sz): ?>
+                            <div class="size-input-group">
+                                <label for="size_<?= $sz ?>"><?= $sz ?></label>
+                                <input type="number" id="size_<?= $sz ?>" name="sizes[<?= $sz ?>]"
+                                    class="form-control form-control-sm"
+                                    value="<?= e($_POST['sizes'][$sz] ?? '0') ?>"
+                                    min="0" step="1" placeholder="0">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="form-hint">Set stock quantity > 0 to make a size available. Leave at 0 to hide that size.</p>
+                </div>
+
+                <div class="form-group">
                     <label>Product Images <span class="hint">(max <?= UPLOAD_MAX_SIZE / 1024 / 1024 ?>MB each)</span></label>
                     <input type="file" name="images[]" class="form-control-file"
                         accept="image/jpeg,image/png,image/webp,image/gif" multiple>

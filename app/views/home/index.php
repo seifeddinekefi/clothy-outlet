@@ -2763,7 +2763,9 @@ $view->setLayout('');
             // Try to fetch additional images from API
             if (modalProductId > 0) {
                 fetch('<?= url('product') ?>/' + modalProductId + '/images')
-                    .then(function(response) { return response.json(); })
+                    .then(function(response) {
+                        return response.json();
+                    })
                     .then(function(images) {
                         if (images && images.length > 1) {
                             // Clear and rebuild with all images
@@ -2790,14 +2792,18 @@ $view->setLayout('');
                                 ti.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;';
                                 t.appendChild(ti);
                                 t.addEventListener('click', function() {
-                                    thumbs.querySelectorAll('.modal-img-thumb').forEach(function(x) { x.classList.remove('active'); });
+                                    thumbs.querySelectorAll('.modal-img-thumb').forEach(function(x) {
+                                        x.classList.remove('active');
+                                    });
                                     t.classList.add('active');
                                     document.getElementById('modalImgMainImg').src = fullPath;
                                 });
                                 thumbs.appendChild(t);
                             });
                             // Update main image to primary
-                            var primaryImg = images.find(function(i) { return i.is_primary; }) || images[0];
+                            var primaryImg = images.find(function(i) {
+                                return i.is_primary;
+                            }) || images[0];
                             var primaryPath = primaryImg.path;
                             var primaryFullPath;
                             if (primaryPath.startsWith('uploads/')) {
@@ -2816,9 +2822,13 @@ $view->setLayout('');
 
                 // Fetch available sizes for this product
                 fetch('<?= url('product') ?>/' + modalProductId + '/sizes')
-                    .then(function(response) { return response.json(); })
+                    .then(function(response) {
+                        return response.json();
+                    })
                     .then(function(sizes) {
                         var sizeContainer = document.getElementById('modalSizes');
+                        var sizeSection = sizeContainer ? sizeContainer.closest('div') : null;
+
                         if (sizeContainer && sizes && sizes.length > 0) {
                             sizeContainer.innerHTML = '';
                             sizes.forEach(function(sizeData, i) {
@@ -2826,11 +2836,19 @@ $view->setLayout('');
                                 btn.type = 'button';
                                 btn.className = 'modal-size-btn' + (i === 0 ? ' active' : '');
                                 btn.textContent = sizeData.size;
-                                btn.onclick = function() { selectModalSize(btn); };
+                                btn.onclick = function() {
+                                    selectModalSize(btn);
+                                };
                                 sizeContainer.appendChild(btn);
                             });
                             // Set default to first available size
                             modalSize = sizes[0].size;
+                            if (sizeSection) sizeSection.style.display = '';
+                        } else if (sizeContainer) {
+                            // No sizes available for this product - hide the section
+                            sizeContainer.innerHTML = '<span style="color:#888;font-size:0.85rem;">One size fits all</span>';
+                            modalSize = ''; // No size needed
+                            if (sizeSection) sizeSection.style.display = '';
                         }
                     })
                     .catch(function(err) {
@@ -2841,7 +2859,7 @@ $view->setLayout('');
             /* Reset quantity and set initial size */
             modalQty = 1;
             document.getElementById('qtyValue').textContent = '1';
-            
+
             // Set first size button as active and update modalSize
             var sizeContainer = document.getElementById('modalSizes');
             var firstSizeBtn = sizeContainer.querySelector('.modal-size-btn');
@@ -2900,7 +2918,6 @@ $view->setLayout('');
         var _csrfMeta = document.querySelector('meta[name="csrf-token"]');
         var _csrfToken = _csrfMeta ? _csrfMeta.getAttribute('content') : '';
         var modalProductId = 0;
-        var defaultSize = '<?= isset($sizes) && !empty($sizes) ? e($sizes[0]) : 'M' ?>';
 
         function addToCart(name, id, qty, size) {
             if (!id) {
@@ -2908,7 +2925,15 @@ $view->setLayout('');
                 return;
             }
             qty = qty || 1;
-            size = size || defaultSize;
+            // Don't default to a size - let the server handle products without sizes
+            var bodyParams = 'product_id=' + encodeURIComponent(id) +
+                '&quantity=' + encodeURIComponent(qty) +
+                '&_csrf_token=' + encodeURIComponent(_csrfToken);
+            
+            if (size) {
+                bodyParams += '&size=' + encodeURIComponent(size);
+            }
+            
             fetch('<?= url('cart/add') ?>', {
                 method: 'POST',
                 headers: {
@@ -2916,10 +2941,7 @@ $view->setLayout('');
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 },
-                body: 'product_id=' + encodeURIComponent(id) +
-                    '&quantity=' + encodeURIComponent(qty) +
-                    '&size=' + encodeURIComponent(size) +
-                    '&_csrf_token=' + encodeURIComponent(_csrfToken)
+                body: bodyParams
             }).then(function(res) {
                 return res.json();
             }).then(function(data) {
@@ -2940,25 +2962,18 @@ $view->setLayout('');
         function addToCartFromModal() {
             var name = document.getElementById('modalName').textContent;
             var sizeToUse = modalSize;
-            
-            // If no size was selected, try to get the first active size button
+
+            // Only try to get size from buttons if modalSize is empty and there are size buttons
             if (!sizeToUse) {
                 var activeBtn = document.querySelector('#modalSizes .modal-size-btn.active');
                 if (activeBtn) {
                     sizeToUse = activeBtn.textContent.trim();
                 }
             }
-            
-            // If still no size, get the first available size button
-            if (!sizeToUse) {
-                var firstBtn = document.querySelector('#modalSizes .modal-size-btn');
-                if (firstBtn) {
-                    sizeToUse = firstBtn.textContent.trim();
-                }
-            }
-            
+
+            // If no size found, that's okay - product may not have sizes
             closeQuickView();
-            addToCart(name + (modalQty > 1 ? ' \u00d7' + modalQty : ''), modalProductId, modalQty, sizeToUse);
+            addToCart(name + (modalQty > 1 ? ' \u00d7' + modalQty : ''), modalProductId, modalQty, sizeToUse || null);
         }
 
         /* ── Toast ───────────────────────────────────────────── */

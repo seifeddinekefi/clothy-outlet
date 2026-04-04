@@ -22,6 +22,7 @@ class ProductController extends BaseAdminController
     private Product      $productModel;
     private Category     $categoryModel;
     private ProductImage $imageModel;
+    private ProductSize  $sizeModel;
 
     public function __construct()
     {
@@ -29,6 +30,7 @@ class ProductController extends BaseAdminController
         $this->productModel  = new Product();
         $this->categoryModel = new Category();
         $this->imageModel    = new ProductImage();
+        $this->sizeModel     = new ProductSize();
     }
 
     // ── Index ─────────────────────────────────────────────────
@@ -77,6 +79,9 @@ class ProductController extends BaseAdminController
             $this->handleImageUploads((int) $productId, $_FILES['images'], true);
         }
 
+        // Handle size entries
+        $this->handleSizeInputs((int) $productId);
+
         Session::flash('success', 'Product created successfully.');
         $this->redirect(url('admin/products'));
     }
@@ -96,6 +101,7 @@ class ProductController extends BaseAdminController
             'product'    => $product,
             'categories' => $this->categoryModel->findAll(),
             'images'     => $this->imageModel->findByProduct((int) $id),
+            'sizes'      => $this->sizeModel->findByProduct((int) $id),
         ]);
     }
 
@@ -141,6 +147,9 @@ class ProductController extends BaseAdminController
                 $this->imageModel->deleteById((int) $img->id);
             }
         }
+
+        // Handle size entries
+        $this->handleSizeInputs((int) $id);
 
         Session::flash('success', 'Product updated successfully.');
         $this->redirect(url('admin/products'));
@@ -299,6 +308,31 @@ class ProductController extends BaseAdminController
         $fullPath = BASE_PATH . '/public/' . ltrim($relativePath, '/');
         if (file_exists($fullPath) && is_file($fullPath)) {
             @unlink($fullPath);
+        }
+    }
+
+    /**
+     * Handle size inputs from the product form.
+     * Expects POST data in format: sizes[XS], sizes[S], sizes[M], etc.
+     * Values are stock quantities. Empty or 0 means size not available.
+     */
+    private function handleSizeInputs(int $productId): void
+    {
+        $sizesInput = $_POST['sizes'] ?? [];
+        $standardSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+        foreach ($standardSizes as $size) {
+            $stock = isset($sizesInput[$size]) ? (int) $sizesInput[$size] : 0;
+            
+            $existing = $this->sizeModel->findByProductAndSize($productId, $size);
+            
+            if ($stock > 0) {
+                // Add or update size with stock
+                $this->sizeModel->upsert($productId, $size, $stock);
+            } elseif ($existing) {
+                // Remove size if stock is 0 or empty
+                $this->sizeModel->deleteById((int) $existing->id);
+            }
         }
     }
 }

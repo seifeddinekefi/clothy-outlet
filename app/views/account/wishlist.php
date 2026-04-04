@@ -39,12 +39,7 @@ $_user = $user ?? Session::user() ?? [];
                   <a href="<?= url('product/' . (int) $p->product_id) ?>" style="display:block;color:#0a0a0a;text-decoration:none;font-weight:600;margin-bottom:.3rem;"><?= htmlspecialchars($p->name) ?></a>
                   <div style="font-size:.95rem;font-weight:700;margin-bottom:.8rem;">$<?= number_format((float) $p->price, 2) ?></div>
                   <div style="display:flex;gap:.5rem;">
-                    <form method="POST" action="<?= url('cart/add') ?>" style="flex:1;">
-                      <?= csrfField() ?>
-                      <input type="hidden" name="product_id" value="<?= (int) $p->product_id ?>">
-                      <input type="hidden" name="quantity" value="1">
-                      <button type="submit" style="width:100%;padding:.6rem .7rem;border:none;background:#0a0a0a;color:#fff;border-radius:6px;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;">Add to Cart</button>
-                    </form>
+                    <a href="<?= url('product/' . (int) $p->product_id) ?>" style="flex:1;display:flex;align-items:center;justify-content:center;padding:.6rem .7rem;border:none;background:#0a0a0a;color:#fff;border-radius:6px;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;text-decoration:none;">Add to Cart</a>
                     <form method="POST" action="<?= url('account/wishlist/remove') ?>">
                       <?= csrfField() ?>
                       <input type="hidden" name="product_id" value="<?= (int) $p->product_id ?>">
