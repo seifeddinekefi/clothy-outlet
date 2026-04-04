@@ -2268,10 +2268,9 @@ $view->setLayout('');
 
             <div class="category-pills fade-in">
                 <button class="category-pill active" data-filter="all">All</button>
-                <button class="category-pill" data-filter="women">Women</button>
-                <button class="category-pill" data-filter="men">Men</button>
-                <button class="category-pill" data-filter="unisex">Unisex</button>
-                <button class="category-pill" data-filter="accessories">Accessories</button>
+                <?php foreach ($categories ?? [] as $cat): ?>
+                    <button class="category-pill" data-filter="<?= (int) $cat->id ?>"><?= e($cat->name) ?></button>
+                <?php endforeach; ?>
             </div>
 
             <?php
@@ -2299,8 +2298,7 @@ $view->setLayout('');
                     $_price  = '$' . number_format((float) $p->price, 2);
                     $_orig   = $p->compare_price ? '$' . number_format((float) $p->compare_price, 2) : '';
                     $_badge  = $p->compare_price ? 'sale' : ($p->is_featured ? 'new' : '');
-                    $_cat    = strtolower($p->category_name ?? 'all');
-                    $_imgFile = $p->primary_image ? basename($p->primary_image) : 'blazer.jpg';
+                    $_catId  = (int) ($p->category_id ?? 0);
                     $_imgSrc  = productImg($p->primary_image ?? null);
                 ?>
                     <article class="product-card fade-in <?= $s ?>"
@@ -2309,7 +2307,7 @@ $view->setLayout('');
                         data-price="<?= htmlspecialchars($_price) ?>"
                         data-orig="<?= htmlspecialchars($_orig) ?>"
                         data-img="<?= htmlspecialchars(productImg($p->primary_image ?? null)) ?>"
-                        data-category="<?= htmlspecialchars($_cat) ?>"
+                        data-category="<?= $_catId ?>"
                         onclick="openQuickView(this)"
                         role="button" tabindex="0">
                         <div class="product-card-img">
@@ -2392,8 +2390,11 @@ $view->setLayout('');
                     <div class="filter-group">
                         <div class="filter-group-title" onclick="toggleFilter(this)">Category</div>
                         <div class="filter-group-body">
-                            <?php foreach (['Women', 'Men', 'Unisex', 'Accessories', 'Sale'] as $cat): ?>
-                                <label class="filter-option"><input type="checkbox"> <?= $cat ?></label>
+                            <?php foreach ($categories ?? [] as $cat): ?>
+                                <label class="filter-option">
+                                    <input type="checkbox" class="category-filter" value="<?= (int) $cat->id ?>" data-slug="<?= e($cat->slug) ?>"> 
+                                    <?= e($cat->name) ?>
+                                </label>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -2403,7 +2404,7 @@ $view->setLayout('');
                         <div class="filter-group-body">
                             <div class="size-grid">
                                 <?php foreach (['XS', 'S', 'M', 'L', 'XL', 'XXL'] as $sz): ?>
-                                    <button class="size-btn" onclick="this.classList.toggle('active')"><?= $sz ?></button>
+                                    <button type="button" class="size-btn size-filter" data-size="<?= $sz ?>"><?= $sz ?></button>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -2425,44 +2426,49 @@ $view->setLayout('');
                         </div>
                     </div>
 
-                    <button class="btn btn--primary btn--full" style="margin-top:.25rem;">Apply Filters</button>
-                    <button class="btn btn--outline  btn--full" style="margin-top:.5rem; border-color:var(--clr-gray-200); color:var(--clr-gray-600);">Clear All</button>
+                    <button class="btn btn--primary btn--full" style="margin-top:.25rem;" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn btn--outline  btn--full" style="margin-top:.5rem; border-color:var(--clr-gray-200); color:var(--clr-gray-600);" onclick="clearFilters()">Clear All</button>
                 </aside>
 
                 <!-- ── Products ── -->
                 <div class="shop-main">
                     <div class="shop-toolbar fade-in">
                         <div class="search-box">
-                            <input type="search" placeholder="Search styles…" aria-label="Search products">
+                            <input type="search" id="shopSearch" placeholder="Search styles…" aria-label="Search products" oninput="applyFilters()">
                         </div>
-                        <select class="sort-select" aria-label="Sort">
-                            <option>Sort: Featured</option>
-                            <option>Price: Low – High</option>
-                            <option>Price: High – Low</option>
-                            <option>Newest First</option>
-                            <option>Best Sellers</option>
+                        <select class="sort-select" id="sortSelect" aria-label="Sort" onchange="applyFilters()">
+                            <option value="featured">Sort: Featured</option>
+                            <option value="price-asc">Price: Low – High</option>
+                            <option value="price-desc">Price: High – Low</option>
+                            <option value="newest">Newest First</option>
                         </select>
-                        <span class="results-count">12 of 48 products</span>
+                        <span class="results-count" id="resultsCount"><?= count($allProducts ?? $dbFeatured ?? []) ?> products</span>
                     </div>
 
                     <div class="products-grid" id="shopGrid">
                         <?php
-                        $_shopList = $dbFeatured ?? [];
+                        $_shopList = $allProducts ?? $dbFeatured ?? [];
                         $_si = 1;
+                        $_productsPerPage = 12;
                         foreach ($_shopList as $p):
                             $s       = 's' . min($_si, 8);
                             $_price  = '$' . number_format((float) $p->price, 2);
                             $_orig   = $p->compare_price ? '$' . number_format((float) $p->compare_price, 2) : '';
                             $_badge  = $p->compare_price ? 'sale' : ($p->is_featured ? 'new' : '');
-                            $_imgFile = $p->primary_image ? basename($p->primary_image) : 'blazer.jpg';
                             $_imgSrc  = productImg($p->primary_image ?? null);
+                            $_hidden = $_si > $_productsPerPage ? 'style="display:none;" data-hidden="true"' : '';
                         ?>
                             <article class="product-card fade-in <?= $s ?>"
                                 data-id="<?= (int) $p->id ?>"
                                 data-name="<?= htmlspecialchars($p->name) ?>"
                                 data-price="<?= htmlspecialchars($_price) ?>"
+                                data-price-num="<?= (float) $p->price ?>"
                                 data-orig="<?= htmlspecialchars($_orig) ?>"
                                 data-img="<?= htmlspecialchars(productImg($p->primary_image ?? null)) ?>"
+                                data-category="<?= (int) ($p->category_id ?? 0) ?>"
+                                data-featured="<?= $p->is_featured ? '1' : '0' ?>"
+                                data-created="<?= strtotime($p->created_at ?? 'now') ?>"
+                                <?= $_hidden ?>
                                 onclick="openQuickView(this)"
                                 role="button" tabindex="0">
                                 <div class="product-card-img">
@@ -2496,8 +2502,12 @@ $view->setLayout('');
                         endforeach; ?>
                     </div>
 
-                    <div style="text-align:center; margin-top:2.5rem;">
-                        <button class="btn btn--outline" style="min-width:200px;">Load More Products</button>
+                    <?php 
+                    $_totalProducts = count($_shopList);
+                    $_hasMore = $_totalProducts > $_productsPerPage;
+                    ?>
+                    <div id="loadMoreWrap" style="text-align:center; margin-top:2.5rem; <?= $_hasMore ? '' : 'display:none;' ?>">
+                        <button class="btn btn--outline" style="min-width:200px;" onclick="loadMoreProducts()">Load More Products</button>
                     </div>
                 </div>
 
@@ -2722,7 +2732,8 @@ $view->setLayout('');
                 this.classList.add('active');
                 var filter = this.dataset.filter;
                 document.querySelectorAll('#featuredGrid .product-card').forEach(function(card) {
-                    card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+                    var cardCat = card.dataset.category;
+                    card.style.display = (filter === 'all' || cardCat === filter) ? '' : 'none';
                 });
             });
         });
@@ -2731,6 +2742,130 @@ $view->setLayout('');
         function toggleFilter(titleEl) {
             titleEl.parentElement.classList.toggle('collapsed');
         }
+
+        /* ── Shop Filtering, Sorting & Load More ─────────────── */
+        var productsPerPage = 12;
+        var currentlyShown = 12;
+        
+        function applyFilters() {
+            var cards = document.querySelectorAll('#shopGrid .product-card');
+            var searchVal = (document.getElementById('shopSearch').value || '').toLowerCase();
+            var sortVal = document.getElementById('sortSelect').value;
+            var maxPrice = parseInt(document.getElementById('priceSlider').value, 10);
+            
+            // Get selected categories
+            var selectedCategories = [];
+            document.querySelectorAll('.category-filter:checked').forEach(function(cb) {
+                selectedCategories.push(parseInt(cb.value, 10));
+            });
+            
+            // Get selected sizes
+            var selectedSizes = [];
+            document.querySelectorAll('.size-filter.active').forEach(function(btn) {
+                selectedSizes.push(btn.dataset.size);
+            });
+            
+            // Filter cards
+            var visibleCards = [];
+            cards.forEach(function(card) {
+                var name = (card.dataset.name || '').toLowerCase();
+                var price = parseFloat(card.dataset.priceNum || 0);
+                var category = parseInt(card.dataset.category || 0, 10);
+                
+                var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
+                var matchPrice = price <= maxPrice;
+                var matchCategory = selectedCategories.length === 0 || selectedCategories.indexOf(category) !== -1;
+                // Note: Size filtering would require fetching sizes per product - for now we skip it
+                var matchSize = true;
+                
+                if (matchSearch && matchPrice && matchCategory && matchSize) {
+                    visibleCards.push(card);
+                    card.style.display = '';
+                    card.removeAttribute('data-filtered-out');
+                } else {
+                    card.style.display = 'none';
+                    card.setAttribute('data-filtered-out', 'true');
+                }
+            });
+            
+            // Sort visible cards
+            visibleCards.sort(function(a, b) {
+                if (sortVal === 'price-asc') {
+                    return parseFloat(a.dataset.priceNum) - parseFloat(b.dataset.priceNum);
+                } else if (sortVal === 'price-desc') {
+                    return parseFloat(b.dataset.priceNum) - parseFloat(a.dataset.priceNum);
+                } else if (sortVal === 'newest') {
+                    return parseInt(b.dataset.created) - parseInt(a.dataset.created);
+                } else {
+                    // Featured - show featured first
+                    return parseInt(b.dataset.featured) - parseInt(a.dataset.featured);
+                }
+            });
+            
+            // Reorder DOM
+            var grid = document.getElementById('shopGrid');
+            visibleCards.forEach(function(card) {
+                grid.appendChild(card);
+            });
+            
+            // Apply pagination
+            currentlyShown = productsPerPage;
+            visibleCards.forEach(function(card, idx) {
+                if (idx >= productsPerPage) {
+                    card.style.display = 'none';
+                    card.setAttribute('data-hidden', 'true');
+                } else {
+                    card.removeAttribute('data-hidden');
+                }
+            });
+            
+            // Update count
+            document.getElementById('resultsCount').textContent = visibleCards.length + ' products';
+            
+            // Show/hide load more
+            var loadMoreWrap = document.getElementById('loadMoreWrap');
+            if (visibleCards.length > productsPerPage) {
+                loadMoreWrap.style.display = '';
+            } else {
+                loadMoreWrap.style.display = 'none';
+            }
+        }
+        
+        function clearFilters() {
+            document.getElementById('shopSearch').value = '';
+            document.getElementById('sortSelect').value = 'featured';
+            document.getElementById('priceSlider').value = 500;
+            document.getElementById('priceDisplay').textContent = 'Up to $500';
+            document.querySelectorAll('.category-filter').forEach(function(cb) { cb.checked = false; });
+            document.querySelectorAll('.size-filter').forEach(function(btn) { btn.classList.remove('active'); });
+            applyFilters();
+        }
+        
+        function loadMoreProducts() {
+            var cards = document.querySelectorAll('#shopGrid .product-card:not([data-filtered-out])');
+            var shown = 0;
+            cards.forEach(function(card, idx) {
+                if (idx < currentlyShown + productsPerPage && !card.hasAttribute('data-filtered-out')) {
+                    card.style.display = '';
+                    card.removeAttribute('data-hidden');
+                    shown++;
+                }
+            });
+            currentlyShown += productsPerPage;
+            
+            // Hide load more if all shown
+            var totalVisible = document.querySelectorAll('#shopGrid .product-card:not([data-filtered-out])').length;
+            if (currentlyShown >= totalVisible) {
+                document.getElementById('loadMoreWrap').style.display = 'none';
+            }
+        }
+        
+        // Size button toggle
+        document.querySelectorAll('.size-filter').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
 
         /* ── Quick View Modal ────────────────────────────────── */
         var modal = document.getElementById('quickViewModal');

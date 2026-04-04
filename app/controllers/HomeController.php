@@ -14,9 +14,18 @@ class HomeController extends Controller
     public function index(): void
     {
         $productModel = new Product();
+        $categoryModel = new Category();
+
+        $allProducts = $productModel->findActive();
+        $featuredProducts = $productModel->findFeatured(12);
+        $categories = $categoryModel->findActive();
+
         $this->render('home.index', [
-            'pageTitle'  => APP_NAME,
-            'dbFeatured' => $productModel->findFeatured(12),
+            'pageTitle'    => APP_NAME,
+            'dbFeatured'   => $featuredProducts,
+            'allProducts'  => $allProducts,
+            'categories'   => $categories,
+            'totalProducts' => count($allProducts),
         ]);
     }
 
