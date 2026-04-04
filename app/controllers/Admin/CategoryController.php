@@ -47,9 +47,9 @@ class CategoryController extends BaseAdminController
             $this->redirect(url('admin/categories/create'));
         }
 
+        // Auto-append timestamp if slug exists instead of blocking
         if ($this->categoryModel->slugExists($data['slug'])) {
-            Session::flash('error', 'A category with this slug already exists. Choose a different name or slug.');
-            $this->redirect(url('admin/categories/create'));
+            $data['slug'] .= '-' . time();
         }
 
         $this->categoryModel->create($data);
