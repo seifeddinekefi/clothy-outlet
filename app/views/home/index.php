@@ -1128,27 +1128,32 @@ $view->setLayout('');
        ============================================================ */
         .features-strip {
             background: var(--clr-beige);
-            padding: var(--sp-2xl) 0;
+            padding: clamp(2rem, 4vw, 3.25rem) 0;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1.25rem;
             text-align: center;
+            align-items: stretch;
         }
 
         .feature-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: .75rem;
-            padding: 1.5rem 1rem;
+            justify-content: center;
+            gap: .6rem;
+            padding: 1.15rem .95rem;
+            min-height: 170px;
             border-radius: 12px;
-            cursor: pointer;
+            cursor: default;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, .08);
+            background: rgba(255, 255, 255, .58);
         }
 
         .feature-item::before {
@@ -1162,8 +1167,8 @@ $view->setLayout('');
         }
 
         .feature-item:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
             background: white;
         }
 
@@ -1172,14 +1177,14 @@ $view->setLayout('');
         }
 
         .feature-icon {
-            width: 56px;
-            height: 56px;
+            width: 52px;
+            height: 52px;
             border: 2px solid rgba(0, 0, 0, .1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.35rem;
+            font-size: 1.2rem;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             background: white;
             position: relative;
@@ -1211,6 +1216,7 @@ $view->setLayout('');
             transition: color 0.3s ease;
             position: relative;
             z-index: 1;
+            max-width: 22ch;
         }
 
         .feature-item:hover p {
@@ -1999,7 +2005,8 @@ $view->setLayout('');
             }
 
             .features-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
             }
         }
 
@@ -2104,7 +2111,11 @@ $view->setLayout('');
             }
 
             .features-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr;
+            }
+
+            .feature-item {
+                min-height: 145px;
             }
         }
     </style>
