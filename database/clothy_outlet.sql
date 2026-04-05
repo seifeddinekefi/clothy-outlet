@@ -206,19 +206,24 @@ CREATE TABLE IF NOT EXISTS `product_sizes` (
 -- email is nullable to support guest checkout.
 -- ==============================================================
 CREATE TABLE IF NOT EXISTS `customers` (
-    `id`         INT UNSIGNED        NOT NULL AUTO_INCREMENT,
-    `name`       VARCHAR(150)        NOT NULL,
-    `email`      VARCHAR(180)        NULL COMMENT 'Null for guest orders',
-    `phone`      VARCHAR(30)         NULL,
-    `address`    VARCHAR(300)        NULL,
-    `city`       VARCHAR(100)        NULL,
-    `notes`      TEXT                NULL COMMENT 'Delivery notes / instructions',
-    `created_at` TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `id`          INT UNSIGNED        NOT NULL AUTO_INCREMENT,
+    `name`        VARCHAR(150)        NOT NULL,
+    `email`       VARCHAR(180)        NULL COMMENT 'Null for guest orders',
+    `password`    VARCHAR(255)        NULL COMMENT 'bcrypt hash, NULL for guests',
+    `phone`       VARCHAR(30)         NULL,
+    `address`     VARCHAR(300)        NULL,
+    `city`        VARCHAR(100)        NULL,
+    `notes`       TEXT                NULL COMMENT 'Delivery notes / instructions',
+    `is_guest`    TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '1 = guest checkout, 0 = registered',
+    `guest_token` VARCHAR(64)         NULL COMMENT 'Token for guest session tracking',
+    `created_at`  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    KEY `idx_customers_email`  (`email`),
-    KEY `idx_customers_phone`  (`phone`)
+    KEY `idx_customers_email`       (`email`),
+    KEY `idx_customers_phone`       (`phone`),
+    KEY `idx_customers_is_guest`    (`is_guest`),
+    KEY `idx_customers_guest_token` (`guest_token`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci
@@ -252,6 +257,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
                          'refunded'
                      )                    NOT NULL DEFAULT 'unpaid',
     `notes`          TEXT                 NULL     COMMENT 'Admin / customer order notes',
+    `tracking_token` VARCHAR(64)          NULL     COMMENT 'Token for guest order tracking',
     `shipped_at`     TIMESTAMP            NULL     DEFAULT NULL,
     `delivered_at`   TIMESTAMP            NULL     DEFAULT NULL,
     `created_at`     TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -262,6 +268,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     KEY `idx_orders_status`          (`status`),
     KEY `idx_orders_payment_status`  (`payment_status`),
     KEY `idx_orders_created`         (`created_at`),
+    KEY `idx_orders_tracking_token`  (`tracking_token`),
 
     CONSTRAINT `fk_orders_customer`
         FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)

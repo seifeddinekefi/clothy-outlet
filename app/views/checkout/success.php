@@ -4,8 +4,12 @@
  * app/views/checkout/success.php
  * Order confirmation page shown after a successful checkout.
  */
-$_order     = $order      ?? null;
-$_items     = $orderItems ?? [];
+$_order              = $order              ?? null;
+$_items              = $orderItems         ?? [];
+$_isGuestOrder       = $isGuestOrder       ?? false;
+$_guestCustomerId    = $guestCustomerId    ?? null;
+$_trackingToken      = $trackingToken      ?? null;
+$_hasExistingAccount = $hasExistingAccount ?? false;
 ?>
 <?php $view->startSection('head') ?>
 <style>
@@ -301,6 +305,178 @@ $_items     = $orderItems ?? [];
         line-height: 1.6;
     }
 
+    /* Guest account creation card */
+    .suc-create-account {
+        background: linear-gradient(135deg, #f8f6f0 0%, #fff 100%);
+        border: 2px solid #c4a97a;
+        border-radius: 12px;
+        max-width: 680px;
+        margin: 0 auto 1.5rem;
+        padding: 1.5rem;
+        text-align: left;
+    }
+
+    .suc-create-account-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .suc-create-account-icon {
+        width: 40px;
+        height: 40px;
+        background: #c4a97a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+    }
+
+    .suc-create-account-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0a0a0a;
+        margin: 0;
+    }
+
+    .suc-create-account-desc {
+        font-size: 0.85rem;
+        color: #7a7570;
+        margin: 0;
+    }
+
+    .suc-create-account-benefits {
+        display: flex;
+        gap: 1.5rem;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+    }
+
+    .suc-benefit {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #4a4743;
+    }
+
+    .suc-benefit svg {
+        color: #3a7a3a;
+        flex-shrink: 0;
+    }
+
+    .suc-create-account-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 0.75rem;
+        align-items: end;
+    }
+
+    .suc-create-account-form .field-group {
+        margin: 0;
+    }
+
+    .suc-create-account-form .field-lbl {
+        font-size: 0.75rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .suc-create-account-form .field-inp {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .suc-create-btn {
+        padding: 0.65rem 1.25rem;
+        background: #0a0a0a;
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.18s;
+        white-space: nowrap;
+    }
+
+    .suc-create-btn:hover {
+        background: #2a2a2a;
+    }
+
+    .suc-skip-link {
+        display: block;
+        text-align: center;
+        margin-top: 0.75rem;
+        font-size: 0.8rem;
+        color: #7a7570;
+    }
+
+    .suc-skip-link a {
+        color: #0a0a0a;
+        text-decoration: underline;
+    }
+
+    /* Tracking link card */
+    .suc-tracking {
+        background: #edf7ed;
+        border: 1px solid #a8d8a8;
+        border-radius: 12px;
+        max-width: 680px;
+        margin: 0 auto 1.5rem;
+        padding: 1rem 1.5rem;
+        text-align: center;
+    }
+
+    .suc-tracking-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #2d5f2d;
+        margin: 0 0 0.5rem;
+    }
+
+    .suc-tracking-link {
+        font-size: 0.8rem;
+        color: #3a7a3a;
+        word-break: break-all;
+    }
+
+    .suc-tracking-link a {
+        color: #3a7a3a;
+        text-decoration: underline;
+    }
+
+    .suc-tracking-note {
+        font-size: 0.75rem;
+        color: #5a8a5a;
+        margin: 0.5rem 0 0;
+    }
+
+    /* Existing account notice */
+    .suc-existing-account {
+        background: #fef9e7;
+        border: 1px solid #f5e6a3;
+        border-radius: 12px;
+        max-width: 680px;
+        margin: 0 auto 1.5rem;
+        padding: 1rem 1.5rem;
+        text-align: center;
+    }
+
+    .suc-existing-account p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #856404;
+    }
+
+    .suc-existing-account a {
+        color: #0a0a0a;
+        font-weight: 600;
+    }
+
     @media (max-width: 600px) {
         .suc-meta {
             grid-template-columns: 1fr 1fr;
@@ -314,6 +490,15 @@ $_items     = $orderItems ?? [];
             grid-column: 1 / -1;
             border-right: none;
             border-top: 1px solid #e8e6e2;
+        }
+
+        .suc-create-account-form {
+            grid-template-columns: 1fr;
+        }
+
+        .suc-create-account-benefits {
+            flex-direction: column;
+            gap: 0.5rem;
         }
     }
 </style>
@@ -425,12 +610,100 @@ $_items     = $orderItems ?? [];
                 </div>
             <?php endif ?>
 
+            <?php if ($_isGuestOrder && $_trackingToken): ?>
+                <!-- Guest order tracking link -->
+                <div class="suc-tracking">
+                    <div class="suc-tracking-title">📬 Bookmark Your Order Tracking Link</div>
+                    <div class="suc-tracking-link">
+                        <a href="<?= url('order/track/' . $_trackingToken) ?>"><?= url('order/track/' . $_trackingToken) ?></a>
+                    </div>
+                    <p class="suc-tracking-note">Use this link to check your order status anytime without logging in.</p>
+                </div>
+            <?php endif ?>
+
+            <?php if ($_isGuestOrder && $_hasExistingAccount): ?>
+                <!-- Existing account notice -->
+                <div class="suc-existing-account">
+                    <p>
+                        <strong>You already have an account with this email!</strong><br>
+                        <a href="<?= url('login') ?>">Log in</a> to view all your orders and enjoy faster checkout next time.
+                    </p>
+                </div>
+            <?php elseif ($_isGuestOrder && $_guestCustomerId && !$_hasExistingAccount): ?>
+                <!-- Guest account creation prompt -->
+                <div class="suc-create-account">
+                    <div class="suc-create-account-header">
+                        <div class="suc-create-account-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="suc-create-account-title">Save your details for next time</h3>
+                            <p class="suc-create-account-desc">Create an account with just a password</p>
+                        </div>
+                    </div>
+
+                    <div class="suc-create-account-benefits">
+                        <div class="suc-benefit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Track all your orders
+                        </div>
+                        <div class="suc-benefit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Faster checkout
+                        </div>
+                        <div class="suc-benefit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Save your wishlist
+                        </div>
+                    </div>
+
+                    <form method="POST" action="<?= url('checkout/register') ?>" class="suc-create-account-form">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="customer_id" value="<?= (int) $_guestCustomerId ?>">
+                        
+                        <div class="field-group">
+                            <label class="field-lbl" for="reg-password">Password</label>
+                            <input class="field-inp" type="password" id="reg-password" name="password" 
+                                required minlength="8" placeholder="Min. 8 characters">
+                        </div>
+                        
+                        <div class="field-group">
+                            <label class="field-lbl" for="reg-password-confirm">Confirm Password</label>
+                            <input class="field-inp" type="password" id="reg-password-confirm" name="password_confirm" 
+                                required minlength="8" placeholder="Confirm password">
+                        </div>
+                        
+                        <button type="submit" class="suc-create-btn">Create Account</button>
+                    </form>
+
+                    <p class="suc-skip-link">
+                        No thanks, <a href="<?= url('products') ?>">continue shopping</a>
+                    </p>
+                </div>
+            <?php endif ?>
+
         <?php endif ?>
 
         <!-- Actions -->
         <div class="suc-actions">
-            <a href="<?= url('account/orders') ?>" class="btn-primary-link">View My Orders</a>
-            <a href="<?= url('products') ?>" class="btn-outline-link">Continue Shopping</a>
+            <?php if ($_isGuestOrder): ?>
+                <a href="<?= url('products') ?>" class="btn-primary-link">Continue Shopping</a>
+                <?php if ($_trackingToken): ?>
+                    <a href="<?= url('order/track/' . $_trackingToken) ?>" class="btn-outline-link">Track Order</a>
+                <?php endif ?>
+            <?php else: ?>
+                <a href="<?= url('account/orders') ?>" class="btn-primary-link">View My Orders</a>
+                <a href="<?= url('products') ?>" class="btn-outline-link">Continue Shopping</a>
+            <?php endif ?>
         </div>
 
     </div>

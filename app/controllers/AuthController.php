@@ -105,6 +105,12 @@ class AuthController extends Controller
             $this->redirect(url('account'));
         }
 
+        // Store redirect URL if provided (for guest checkout flow)
+        $redirect = $_GET['redirect'] ?? null;
+        if ($redirect) {
+            Session::set('login_redirect', $redirect);
+        }
+
         $this->render('auth.login', [
             'pageTitle' => 'Sign In — ' . APP_NAME,
         ]);
@@ -116,7 +122,7 @@ class AuthController extends Controller
 
         // Check rate limit before processing
         $rateLimiter = new RateLimitMiddleware('login');
-        $rateLimiter->handle(function() {}); // Will redirect if locked out
+        $rateLimiter->handle(function () {}); // Will redirect if locked out
 
         $email    = trim($this->post('email', ''));
         $password = $this->post('password', '');
@@ -136,13 +142,13 @@ class AuthController extends Controller
         if (!$customer || !password_verify($password, $customer->password ?? '')) {
             // Record failed attempt for rate limiting
             RateLimitMiddleware::recordFailedAttempt('login');
-            
+
             $remaining = RateLimitMiddleware::getRemainingAttempts('login');
             $message = 'Invalid email or password.';
             if ($remaining > 0 && $remaining <= 3) {
                 $message .= " {$remaining} attempt(s) remaining.";
             }
-            
+
             $this->flash('error', $message);
             Session::set('_old_login', ['email' => $email]);
             $this->redirect(url('login'));
@@ -173,6 +179,14 @@ class AuthController extends Controller
         }
 
         $this->flash('success', 'Welcome back, ' . htmlspecialchars($customer->name) . '!');
+        
+        // Check for redirect (e.g., returning from guest checkout)
+        $redirect = Session::get('login_redirect');
+        if ($redirect) {
+            Session::delete('login_redirect');
+            $this->redirect(url($redirect));
+        }
+        
         $this->redirect(url('account'));
     }
 
@@ -195,7 +209,7 @@ class AuthController extends Controller
 
         // Check rate limit for password reset
         $rateLimiter = new RateLimitMiddleware('password_reset');
-        $rateLimiter->handle(function() {});
+        $rateLimiter->handle(function () {});
 
         $email = trim($this->post('email', ''));
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -214,12 +228,12 @@ class AuthController extends Controller
 
             if ($token) {
                 $resetUrl = url('reset-password/' . $token);
-                
+
                 // Send password reset email
                 $mailer = new Mailer();
                 $customerName = $customer->name ?? 'Customer';
                 $mailer->sendPasswordReset($email, $resetUrl, $customerName);
-                
+
                 // Record attempt for rate limiting
                 RateLimitMiddleware::recordFailedAttempt('password_reset');
             }

@@ -66,15 +66,20 @@ $router->group(['prefix' => 'account', 'middleware' => 'AuthMiddleware'], functi
     $router->post('/wishlist/toggle', 'WishlistController@toggle', 'account.wishlist.toggle');
 });
 
-// ─── Checkout Routes (auth-protected) ───────────────────────
+// ─── Checkout Routes (guest + auth allowed) ─────────────────
 
-$router->group(['prefix' => 'checkout', 'middleware' => 'AuthMiddleware'], function ($router): void {
+$router->group(['prefix' => 'checkout', 'middleware' => 'GuestCheckoutMiddleware'], function ($router): void {
     $router->get('/',        'CheckoutController@index',   'checkout');
     $router->post('/coupon', 'CheckoutController@applyCoupon', 'checkout.coupon');
     $router->post('/coupon/remove', 'CheckoutController@removeCoupon', 'checkout.coupon.remove');
     $router->post('/place',  'CheckoutController@place',   'checkout.place');
     $router->get('/success', 'CheckoutController@success', 'checkout.success');
+    $router->post('/register', 'CheckoutController@registerGuest', 'checkout.register');
 });
+
+// ─── Guest Order Tracking ────────────────────────────────────
+
+$router->get('/order/track/{token}', 'CheckoutController@trackOrder', 'order.track');
 
 // ─── Admin Routes (admin-protected) ─────────────────────────
 // Auth is enforced by AdminMiddleware (role check included).

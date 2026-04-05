@@ -4,13 +4,15 @@
  * app/views/checkout/index.php
  * Checkout page — shipping info + payment method + order summary.
  */
-$_items    = $items    ?? [];
-$_subtotal = $subtotal ?? 0;
-$_shipping = $shipping ?? 0;
-$_discount = $discount ?? 0;
-$_coupon   = $coupon   ?? null;
-$_total    = $total    ?? 0;
-$_customer = $customer ?? null;
+$_items        = $items        ?? [];
+$_subtotal     = $subtotal     ?? 0;
+$_shipping     = $shipping     ?? 0;
+$_discount     = $discount     ?? 0;
+$_coupon       = $coupon       ?? null;
+$_total        = $total        ?? 0;
+$_customer     = $customer     ?? null;
+$_isGuest      = $isGuest      ?? false;
+$_governorates = $governorates ?? [];
 ?>
 <?php $view->startSection('head') ?>
 <style>
@@ -374,6 +376,25 @@ $_customer = $customer ?? null;
                 <!-- ── Left column ────────────────────────────────── -->
                 <div>
 
+                    <?php if ($_isGuest): ?>
+                    <!-- Guest checkout notice -->
+                    <div class="co-card" style="background: #fef9e7; border-color: #f5e6a3;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b8860b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="16" x2="12" y2="12"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8"/>
+                            </svg>
+                            <div>
+                                <strong style="color: #856404;">Checking out as guest</strong>
+                                <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: #6c5a1c;">
+                                    Already have an account? <a href="<?= url('login') ?>?redirect=checkout" style="color: #0a0a0a; font-weight: 600;">Log in</a> for faster checkout.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif ?>
+
                     <!-- Shipping information -->
                     <div class="co-card">
                         <div class="co-card-title">Shipping Information</div>
@@ -386,16 +407,22 @@ $_customer = $customer ?? null;
 
                         <div class="field-row-2">
                             <div class="field-group">
-                                <label class="field-lbl" for="co-email">Email Address</label>
+                                <label class="field-lbl" for="co-email">Email Address <?php if ($_isGuest): ?><span style="color:#c03030">*</span><?php endif ?></label>
+                                <?php if ($_isGuest): ?>
+                                <input class="field-inp" type="email" id="co-email" name="email" required
+                                    autocomplete="email" placeholder="your@email.com"
+                                    value="">
+                                <?php else: ?>
                                 <input class="field-inp" type="email" id="co-email"
                                     autocomplete="email" disabled
                                     value="<?= htmlspecialchars($_customer->email ?? '') ?>"
                                     title="Email cannot be changed here">
+                                <?php endif ?>
                             </div>
                             <div class="field-group">
-                                <label class="field-lbl" for="co-phone">Phone</label>
-                                <input class="field-inp" type="tel" id="co-phone" name="phone"
-                                    autocomplete="tel" placeholder="+1 (555) 000-0000"
+                                <label class="field-lbl" for="co-phone">Phone <span style="color:#c03030">*</span></label>
+                                <input class="field-inp" type="tel" id="co-phone" name="phone" required
+                                    autocomplete="tel" placeholder="+216 XX XXX XXX"
                                     value="<?= htmlspecialchars($_customer->phone ?? '') ?>">
                             </div>
                         </div>
@@ -403,15 +430,20 @@ $_customer = $customer ?? null;
                         <div class="field-group">
                             <label class="field-lbl" for="co-address">Street Address <span style="color:#c03030">*</span></label>
                             <input class="field-inp" type="text" id="co-address" name="address" required
-                                autocomplete="street-address" placeholder="123 Main St, Apt 4B"
+                                autocomplete="street-address" placeholder="Rue, numéro, appartement..."
                                 value="<?= htmlspecialchars($_customer->address ?? '') ?>">
                         </div>
 
                         <div class="field-group">
-                            <label class="field-lbl" for="co-city">City <span style="color:#c03030">*</span></label>
-                            <input class="field-inp" type="text" id="co-city" name="city" required
-                                autocomplete="address-level2" placeholder="New York"
-                                value="<?= htmlspecialchars($_customer->city ?? '') ?>">
+                            <label class="field-lbl" for="co-city">Governorate <span style="color:#c03030">*</span></label>
+                            <select class="field-select" id="co-city" name="city" required>
+                                <option value="">Select your governorate</option>
+                                <?php foreach ($_governorates as $gov): ?>
+                                <option value="<?= htmlspecialchars($gov) ?>" <?= ($_customer->city ?? '') === $gov ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($gov) ?>
+                                </option>
+                                <?php endforeach ?>
+                            </select>
                         </div>
 
                         <div class="field-group">
@@ -427,7 +459,7 @@ $_customer = $customer ?? null;
 
                         <div class="pay-options">
 
-                            <label class="pay-option">
+                            <label class="pay-option selected">
                                 <input type="radio" name="payment_method" value="cash_on_delivery" checked>
                                 <span class="pay-option-icon">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -438,34 +470,6 @@ $_customer = $customer ?? null;
                                 <span class="pay-option-info">
                                     <span class="pay-option-name">Cash on Delivery</span>
                                     <span class="pay-option-desc">Open the package first, then pay on delivery</span>
-                                </span>
-                            </label>
-
-                            <label class="pay-option">
-                                <input type="radio" name="payment_method" value="card">
-                                <span class="pay-option-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="2" y="5" width="20" height="14" rx="2" />
-                                        <line x1="2" y1="10" x2="22" y2="10" />
-                                    </svg>
-                                </span>
-                                <span class="pay-option-info">
-                                    <span class="pay-option-name">Credit / Debit Card</span>
-                                    <span class="pay-option-desc">Visa, Mastercard, Amex</span>
-                                </span>
-                            </label>
-
-                            <label class="pay-option">
-                                <input type="radio" name="payment_method" value="paypal">
-                                <span class="pay-option-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M7 11C7 11 6 17 9 19s8 1 10-3-2-6-5-6H7z" />
-                                        <path d="M7 11C6 11 5 17 5 20h2" />
-                                    </svg>
-                                </span>
-                                <span class="pay-option-info">
-                                    <span class="pay-option-name">PayPal</span>
-                                    <span class="pay-option-desc">Fast and secure via PayPal</span>
                                 </span>
                             </label>
 
@@ -588,5 +592,64 @@ $_customer = $customer ?? null;
     if (checked) {
         checked.closest('.pay-option').classList.add('selected');
     }
+
+    // Guest checkout enhancements
+    (function() {
+        var emailField = document.getElementById('co-email');
+        var nameField = document.getElementById('co-name');
+        var phoneField = document.getElementById('co-phone');
+        var addressField = document.getElementById('co-address');
+        
+        // Only apply localStorage for guests (email field is not disabled)
+        if (emailField && !emailField.disabled) {
+            // Restore saved guest info from localStorage
+            var savedGuestInfo = localStorage.getItem('clothy_guest_info');
+            if (savedGuestInfo) {
+                try {
+                    var info = JSON.parse(savedGuestInfo);
+                    if (info.email && emailField.value === '') {
+                        emailField.value = info.email;
+                    }
+                    if (info.name && nameField && nameField.value === '') {
+                        nameField.value = info.name;
+                    }
+                    if (info.phone && phoneField && phoneField.value === '') {
+                        phoneField.value = info.phone;
+                    }
+                    if (info.address && addressField && addressField.value === '') {
+                        addressField.value = info.address;
+                    }
+                } catch (e) {}
+            }
+
+            // Save guest info on form submit
+            var form = document.querySelector('form[action*="checkout/place"]');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    var guestInfo = {
+                        email: emailField.value,
+                        name: nameField ? nameField.value : '',
+                        phone: phoneField ? phoneField.value : '',
+                        address: addressField ? addressField.value : ''
+                    };
+                    localStorage.setItem('clothy_guest_info', JSON.stringify(guestInfo));
+                });
+            }
+        }
+
+        // Phone number formatting for Tunisia (+216)
+        if (phoneField) {
+            phoneField.addEventListener('input', function() {
+                var value = this.value.replace(/[^\d+]/g, '');
+                // Auto-add +216 prefix if user starts typing without it
+                if (value.length > 0 && !value.startsWith('+') && !value.startsWith('216')) {
+                    if (value.length === 8 && /^[2-9]/.test(value)) {
+                        // Looks like a Tunisian number without prefix
+                        this.value = '+216 ' + value;
+                    }
+                }
+            });
+        }
+    })();
 </script>
 <?php $view->endSection() ?>

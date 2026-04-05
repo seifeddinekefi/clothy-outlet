@@ -45,8 +45,9 @@ class Customer extends Model
      */
     public function findByEmail(string $email): mixed
     {
+        // Prefer registered accounts over guests when looking up by email
         return $this->db->selectOne(
-            "SELECT * FROM `{$this->table}` WHERE `email` = :email LIMIT 1",
+            "SELECT * FROM `{$this->table}` WHERE `email` = :email ORDER BY `is_guest` ASC LIMIT 1",
             [':email' => $email]
         );
     }
@@ -117,22 +118,97 @@ class Customer extends Model
     /**
      * Create a new customer profile.
      *
-     * @param  array{name: string, email: string, password?: string|null, phone?: string|null, address?: string|null, city?: string|null, notes?: string|null} $data
+     * @param  array{name: string, email: string, password?: string|null, phone?: string|null, address?: string|null, city?: string|null, notes?: string|null, is_guest?: int, guest_token?: string|null} $data
      * @return string|false  New customer id
      */
     public function create(array $data): string|false
     {
         return $this->insert([
-            'name'               => $data['name'],
-            'email'              => $data['email'],
-            'password'           => $data['password']           ?? null,
-            'email_verified_at'  => $data['email_verified_at']  ?? null,
-            'remember_token'     => $data['remember_token']     ?? null,
-            'phone'              => $data['phone']              ?? null,
-            'address'            => $data['address']            ?? null,
-            'city'               => $data['city']               ?? null,
-            'notes'              => $data['notes']              ?? null,
+            'name'        => $data['name'],
+            'email'       => $data['email'],
+            'password'    => $data['password']    ?? null,
+            'phone'       => $data['phone']       ?? null,
+            'address'     => $data['address']     ?? null,
+            'city'        => $data['city']        ?? null,
+            'notes'       => $data['notes']       ?? null,
+            'is_guest'    => $data['is_guest']    ?? 0,
+            'guest_token' => $data['guest_token'] ?? null,
         ]);
+    }
+
+    /**
+     * Create a guest customer for checkout.
+     *
+     * @param  array{name: string, email: string, phone: string, address: string, city: string, notes?: string|null, guest_token: string} $data
+     * @return string|false  New customer id
+     */
+    public function createGuest(array $data): string|false
+    {
+        return $this->create([
+            'name'        => $data['name'],
+            'email'       => $data['email'],
+            'phone'       => $data['phone'],
+            'address'     => $data['address'],
+            'city'        => $data['city'],
+            'notes'       => $data['notes'] ?? null,
+            'is_guest'    => 1,
+            'guest_token' => $data['guest_token'],
+            'password'    => null,
+        ]);
+    }
+
+    /**
+     * Find a guest customer by their guest token.
+     */
+    public function findByGuestToken(string $token): mixed
+    {
+        return $this->db->selectOne(
+            "SELECT * FROM `{$this->table}` WHERE `guest_token` = :token AND `is_guest` = 1 LIMIT 1",
+            [':token' => $token]
+        );
+    }
+
+    /**
+     * Find a registered (non-guest) customer by email.
+     */
+    public function findRegisteredByEmail(string $email): mixed
+    {
+        return $this->db->selectOne(
+            "SELECT * FROM `{$this->table}` WHERE `email` = :email AND `is_guest` = 0 LIMIT 1",
+            [':email' => $email]
+        );
+    }
+
+    /**
+     * Check if an email has a registered (non-guest) account.
+     */
+    public function hasRegisteredAccount(string $email): bool
+    {
+        $row = $this->db->selectOne(
+            "SELECT COUNT(*) AS cnt FROM `{$this->table}` WHERE `email` = :email AND `is_guest` = 0",
+            [':email' => $email]
+        );
+        return (int) ($row->cnt ?? 0) > 0;
+    }
+
+    /**
+     * Convert a guest customer to a registered user.
+     *
+     * @param  int    $customerId  The guest customer ID
+     * @param  string $password    Plain text password (will be hashed)
+     * @return bool
+     */
+    public function convertGuestToUser(int $customerId, string $password): bool
+    {
+        return $this->update(
+            [
+                'password'    => password_hash($password, PASSWORD_BCRYPT),
+                'is_guest'    => 0,
+                'guest_token' => null,
+            ],
+            '`id` = :id AND `is_guest` = 1',
+            [':id' => $customerId]
+        );
     }
 
     /**

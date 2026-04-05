@@ -311,7 +311,8 @@ class Order extends Model
      *     shipping_fee?:   float,
      *     total_price:     float,
      *     payment_method?: string,
-     *     notes?:          string|null
+     *     notes?:          string|null,
+     *     tracking_token?: string|null
      * } $data
      * @return string|false  New order id
      */
@@ -320,14 +321,37 @@ class Order extends Model
         return $this->insert([
             'customer_id'    => $data['customer_id'],
             'subtotal'       => $data['subtotal'],
-            'discount'       => $data['discount']      ?? 0.00,
-            'shipping_fee'   => $data['shipping_fee']  ?? 0.00,
+            'discount'       => $data['discount']       ?? 0.00,
+            'shipping_fee'   => $data['shipping_fee']   ?? 0.00,
             'total_price'    => $data['total_price'],
             'status'         => 'pending',
             'payment_method' => $data['payment_method'] ?? 'cash_on_delivery',
             'payment_status' => 'unpaid',
             'notes'          => $data['notes']          ?? null,
+            'tracking_token' => $data['tracking_token'] ?? null,
         ]);
+    }
+
+    /**
+     * Find an order by its tracking token (for guest order tracking).
+     */
+    public function findByTrackingToken(string $token): mixed
+    {
+        return $this->db->selectOne(
+            "SELECT o.*,
+                    c.name    AS customer_name,
+                    c.email   AS customer_email,
+                    c.phone   AS customer_phone,
+                    c.address AS customer_address,
+                    c.city    AS customer_city,
+                    c.notes   AS customer_notes,
+                    c.is_guest AS customer_is_guest
+               FROM `orders`    o
+               JOIN `customers` c ON c.id = o.customer_id
+              WHERE o.tracking_token = :token
+              LIMIT 1",
+            [':token' => $token]
+        );
     }
 
     /**
