@@ -29,23 +29,23 @@
         <table class="totals-table">
             <tr>
                 <td>Subtotal</td>
-                <td>$<?= number_format((float) $order->subtotal,    2) ?></td>
+                <td><?= formatPrice($order->subtotal) ?></td>
             </tr>
             <?php if ((float) $order->discount > 0): ?>
                 <tr>
                     <td>Discount</td>
-                    <td>−$<?= number_format((float) $order->discount,   2) ?></td>
+                    <td>−<?= formatPrice($order->discount) ?></td>
                 </tr>
             <?php endif; ?>
             <?php if ((float) $order->shipping_fee > 0): ?>
                 <tr>
                     <td>Shipping</td>
-                    <td>$<?= number_format((float) $order->shipping_fee, 2) ?></td>
+                    <td><?= formatPrice($order->shipping_fee) ?></td>
                 </tr>
             <?php endif; ?>
             <tr class="totals-total">
                 <td><strong>Total</strong></td>
-                <td><strong>$<?= number_format((float) $order->total_price, 2) ?></strong></td>
+                <td><strong><?= formatPrice($order->total_price) ?></strong></td>
             </tr>
         </table>
     </div>
@@ -104,9 +104,9 @@
                         </td>
                         <td><?= e($item->product_name) ?></td>
                         <td><?= e($item->size ?? '—') ?></td>
-                        <td>$<?= number_format((float) $item->price, 2) ?></td>
+                        <td><?= formatPrice($item->price) ?></td>
                         <td><?= e($item->quantity) ?></td>
-                        <td>$<?= number_format((float) $item->price * (int) $item->quantity, 2) ?></td>
+                        <td><?= formatPrice((float) $item->price * (int) $item->quantity) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

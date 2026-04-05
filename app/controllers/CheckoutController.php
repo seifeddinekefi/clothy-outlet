@@ -110,7 +110,7 @@ class CheckoutController extends Controller
         $customerModel = new Customer();
         $customer      = $customerModel->findById($user['id']);
 
-        $shipping = $subtotal >= 150 ? 0.00 : 9.99;
+        $shipping = defined('SHIPPING_FEE') ? (float) SHIPPING_FEE : 8.00;
         $coupon   = $this->activeCoupon($subtotal);
         $discount = (float) ($coupon['amount'] ?? 0);
         $total    = max(0, $subtotal - $discount + $shipping);
@@ -226,7 +226,7 @@ class CheckoutController extends Controller
         $customerModel->updateCustomer($user['id'], $updateData);
 
         // ── Compute totals ────────────────────────────────────
-        $shippingFee = $subtotal >= 150 ? 0.00 : 9.99;
+        $shippingFee = defined('SHIPPING_FEE') ? (float) SHIPPING_FEE : 8.00;
         $coupon      = $this->activeCoupon($subtotal);
         $discount    = (float) ($coupon['amount'] ?? 0);
         $total       = max(0, $subtotal - $discount + $shippingFee);

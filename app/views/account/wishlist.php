@@ -37,7 +37,7 @@ $_user = $user ?? Session::user() ?? [];
                 </a>
                 <div style="padding:.9rem;">
                   <a href="<?= url('product/' . (int) $p->product_id) ?>" style="display:block;color:#0a0a0a;text-decoration:none;font-weight:600;margin-bottom:.3rem;"><?= htmlspecialchars($p->name) ?></a>
-                  <div style="font-size:.95rem;font-weight:700;margin-bottom:.8rem;">$<?= number_format((float) $p->price, 2) ?></div>
+                  <div style="font-size:.95rem;font-weight:700;margin-bottom:.8rem;"><?= formatPrice($p->price) ?></div>
                   <div style="display:flex;gap:.5rem;">
                     <a href="<?= url('product/' . (int) $p->product_id) ?>" style="flex:1;display:flex;align-items:center;justify-content:center;padding:.6rem .7rem;border:none;background:#0a0a0a;color:#fff;border-radius:6px;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;text-decoration:none;">Add to Cart</a>
                     <form method="POST" action="<?= url('account/wishlist/remove') ?>">

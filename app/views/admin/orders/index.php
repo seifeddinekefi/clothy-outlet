@@ -44,7 +44,7 @@
                         <tr>
                             <td><?= e($o->id) ?></td>
                             <td><?= e($o->customer_name) ?></td>
-                            <td>$<?= number_format((float) $o->total_price, 2) ?></td>
+                            <td><?= formatPrice($o->total_price) ?></td>
                             <td><span class="badge badge--<?= e($o->payment_status) ?>"><?= e($o->payment_status) ?></span></td>
                             <td><span class="badge badge--<?= e($o->status) ?>"><?= e($o->status) ?></span></td>
                             <td><?= e(date('M d, Y', strtotime($o->created_at))) ?></td>

@@ -29,7 +29,7 @@
                             <td><?= e($p->id) ?></td>
                             <td class="td-name"><?= e($p->name) ?></td>
                             <td><?= e($p->category_name) ?></td>
-                            <td>$<?= number_format((float) $p->price, 2) ?></td>
+                            <td><?= formatPrice($p->price) ?></td>
                             <td><?= e($p->stock) ?></td>
                             <td><?= $p->is_featured ? '<span class="badge badge--success">Yes</span>' : '<span class="badge badge--muted">No</span>' ?></td>
                             <td><?= $p->is_active  ? '<span class="badge badge--success">Yes</span>' : '<span class="badge badge--danger">No</span>'  ?></td>

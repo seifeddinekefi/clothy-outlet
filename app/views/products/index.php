@@ -339,7 +339,7 @@ $_maxPrice  = (string) ($_filters['max_price'] ?? '');
                 </a>
                 <div class="p-body">
                   <a class="p-name" href="<?= url('product/' . (int) $p->id) ?>"><?= e($p->name) ?></a>
-                  <div class="p-price">$<?= number_format((float) $p->price, 2) ?></div>
+                  <div class="p-price"><?= formatPrice($p->price) ?></div>
 
                   <div class="p-actions">
                     <a href="<?= url('product/' . (int) $p->id) ?>" class="btn-p cart" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">Add to Cart</a>

@@ -2248,7 +2248,8 @@ $view->setLayout('');
        ══════════════════════════════════════════════════════════ -->
     <div class="marquee-strip" aria-hidden="true">
         <div class="marquee-track">
-            <?php $msg = '<span>New Arrivals <strong>·</strong> Free Shipping Over $150 <strong>·</strong> Spring Collection 2026 <strong>·</strong> Premium Quality <strong>·</strong> Exclusive Drops <strong>·</strong></span>';
+            <?php
+            $msg = '<span>New Arrivals <strong>·</strong> Flat Shipping ' . formatPrice(defined('SHIPPING_FEE') ? SHIPPING_FEE : 8) . ' Nationwide <strong>·</strong> Spring Collection 2026 <strong>·</strong> Premium Quality <strong>·</strong> Exclusive Drops <strong>·</strong></span>';
             echo str_repeat($msg, 4); ?>
         </div>
     </div>
@@ -2295,8 +2296,8 @@ $view->setLayout('');
                 $stagger   = 1;
                 foreach ($_featList as $p):
                     $s       = 's' . min($stagger, 8);
-                    $_price  = '$' . number_format((float) $p->price, 2);
-                    $_orig   = $p->compare_price ? '$' . number_format((float) $p->compare_price, 2) : '';
+                    $_price  = formatPrice($p->price);
+                    $_orig   = $p->compare_price ? formatPrice($p->compare_price) : '';
                     $_badge  = $p->compare_price ? 'sale' : ($p->is_featured ? 'new' : '');
                     $_catId  = (int) ($p->category_id ?? 0);
                     $_imgSrc  = productImg($p->primary_image ?? null);
@@ -2351,8 +2352,8 @@ $view->setLayout('');
             <div class="features-grid">
                 <div class="feature-item fade-in">
                     <div class="feature-icon">✦</div>
-                    <h4>Free Shipping</h4>
-                    <p>On all orders over $150</p>
+                    <h4>Fast Delivery</h4>
+                    <p><?= formatPrice(defined('SHIPPING_FEE') ? SHIPPING_FEE : 8) ?> nationwide shipping</p>
                 </div>
                 <div class="feature-item fade-in s1">
                     <div class="feature-icon">↺</div>
@@ -2360,6 +2361,11 @@ $view->setLayout('');
                     <p>7-day hassle-free returns</p>
                 </div>
                 <div class="feature-item fade-in s2">
+                    <div class="feature-icon">📦</div>
+                    <h4>Inspect Before Payment</h4>
+                    <p>Open package before paying</p>
+                </div>
+                <div class="feature-item fade-in s3">
                     <div class="feature-icon">◈</div>
                     <h4>Premium Quality</h4>
                     <p>Ethically sourced fabrics</p>
@@ -2415,13 +2421,13 @@ $view->setLayout('');
                         <div class="filter-group-body">
                             <div class="price-range-wrap">
                                 <div class="price-range-hdr">
-                                    <span>$0</span>
-                                    <span class="price-val" id="priceDisplay">Up to $500</span>
-                                    <span>$500</span>
+                                    <span>0 TND</span>
+                                    <span class="price-val" id="priceDisplay">Up to 500 TND</span>
+                                    <span>500 TND</span>
                                 </div>
                                 <input type="range" class="range-slider" id="priceSlider"
                                     min="0" max="500" value="500"
-                                    oninput="document.getElementById('priceDisplay').textContent = 'Up to $' + this.value">
+                                    oninput="document.getElementById('priceDisplay').textContent = 'Up to ' + this.value + ' TND'">
                             </div>
                         </div>
                     </div>
@@ -2452,8 +2458,8 @@ $view->setLayout('');
                         $_productsPerPage = 12;
                         foreach ($_shopList as $p):
                             $s       = 's' . min($_si, 8);
-                            $_price  = '$' . number_format((float) $p->price, 2);
-                            $_orig   = $p->compare_price ? '$' . number_format((float) $p->compare_price, 2) : '';
+                            $_price  = formatPrice($p->price);
+                            $_orig   = $p->compare_price ? formatPrice($p->compare_price) : '';
                             $_badge  = $p->compare_price ? 'sale' : ($p->is_featured ? 'new' : '');
                             $_imgSrc  = productImg($p->primary_image ?? null);
                             $_hidden = $_si > $_productsPerPage ? 'style="display:none;" data-hidden="true"' : '';
@@ -2835,7 +2841,7 @@ $view->setLayout('');
             document.getElementById('shopSearch').value = '';
             document.getElementById('sortSelect').value = 'featured';
             document.getElementById('priceSlider').value = 500;
-            document.getElementById('priceDisplay').textContent = 'Up to $500';
+            document.getElementById('priceDisplay').textContent = 'Up to 500 TND';
             document.querySelectorAll('.category-filter').forEach(function(cb) { cb.checked = false; });
             document.querySelectorAll('.size-filter').forEach(function(btn) { btn.classList.remove('active'); });
             applyFilters();

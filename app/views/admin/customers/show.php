@@ -51,7 +51,7 @@
                 <span class="stat-label">Total Orders</span>
             </div>
             <div class="stat-card">
-                <span class="stat-value">$<?= number_format($totalSpent, 2) ?></span>
+                <span class="stat-value"><?= formatPrice($totalSpent) ?></span>
                 <span class="stat-label">Total Spent</span>
             </div>
             <div class="stat-card">
@@ -104,7 +104,7 @@
                     <?php foreach ($orders as $o): ?>
                         <tr>
                             <td><?= e($o->id) ?></td>
-                            <td>$<?= number_format((float) $o->total_price, 2) ?></td>
+                            <td><?= formatPrice($o->total_price) ?></td>
                             <td>
                                 <span class="badge badge--<?= e($o->payment_status) ?>">
                                     <?= e($o->payment_status) ?>

@@ -161,6 +161,25 @@ function asset(string $path): string
 }
 
 /**
+ * Format a price with the configured currency symbol.
+ *
+ * @param  float|int|string $amount
+ * @param  int              $decimals
+ * @return string           e.g. "99.00 TND"
+ */
+function formatPrice($amount, int $decimals = 2): string
+{
+    $formatted = number_format((float) $amount, $decimals);
+    $symbol = defined('CURRENCY_SYMBOL') ? CURRENCY_SYMBOL : 'TND';
+    $position = defined('CURRENCY_POSITION') ? CURRENCY_POSITION : 'after';
+
+    if ($position === 'after') {
+        return $formatted . ' ' . $symbol;
+    }
+    return $symbol . $formatted;
+}
+
+/**
  * Return a public URL for a product image stored in the DB (primary_image column).
  * Falls back to the placeholder if the file doesn't exist on disk yet.
  *

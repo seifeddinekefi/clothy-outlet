@@ -384,7 +384,7 @@ $_items     = $orderItems ?? [];
                                     <?php if (!empty($item->size)): ?> &middot; Size: <?= htmlspecialchars($item->size) ?><?php endif ?>
                                 </span>
                             </div>
-                            <span class="suc-item-price">$<?= number_format((float) $item->price * (int) $item->quantity, 2) ?></span>
+                            <span class="suc-item-price"><?= formatPrice((float) $item->price * (int) $item->quantity) ?></span>
                         </div>
                     <?php endforeach ?>
                 </div>
@@ -393,19 +393,19 @@ $_items     = $orderItems ?? [];
                 <div class="suc-totals">
                     <div class="suc-total-row">
                         <span>Subtotal</span>
-                        <span>$<?= number_format((float) ($_order->subtotal ?? 0), 2) ?></span>
+                        <span><?= formatPrice($_order->subtotal ?? 0) ?></span>
                     </div>
                     <div class="suc-total-row">
                         <span>Shipping</span>
                         <?php if ((float)($_order->shipping_fee ?? 0) === 0.0): ?>
                             <span class="suc-free">Free</span>
                         <?php else: ?>
-                            <span>$<?= number_format((float) $_order->shipping_fee, 2) ?></span>
+                            <span><?= formatPrice($_order->shipping_fee) ?></span>
                         <?php endif ?>
                     </div>
                     <div class="suc-total-row grand">
                         <span>Total Charged</span>
-                        <span>$<?= number_format((float) ($_order->total_price ?? 0), 2) ?></span>
+                        <span><?= formatPrice($_order->total_price ?? 0) ?></span>
                     </div>
                 </div>
             </div>

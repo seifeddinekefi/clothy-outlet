@@ -88,10 +88,10 @@ foreach ($ordersByStatus as $row) {
             <span class="stat-trend stat-trend--up">Revenue</span>
         </div>
         <div>
-            <div class="stat-value">$<?= number_format($totalRevenue, 0) ?></div>
+            <div class="stat-value"><?= formatPrice($totalRevenue, 0) ?></div>
             <div class="stat-label">Total Revenue</div>
         </div>
-        <div class="stat-sub">This month: $<?= number_format($revenueThisMonth, 2) ?></div>
+        <div class="stat-sub">This month: <?= formatPrice($revenueThisMonth) ?></div>
     </div>
 </div>
 
@@ -205,7 +205,7 @@ foreach ($ordersByStatus as $row) {
                                 <td class="td-muted"><?= $i + 1 ?></td>
                                 <td class="td-name"><?= e($p->name) ?></td>
                                 <td><?= number_format($p->units_sold) ?></td>
-                                <td>$<?= number_format((float)$p->revenue, 2) ?></td>
+                                <td><?= formatPrice($p->revenue) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -243,7 +243,7 @@ foreach ($ordersByStatus as $row) {
                         <tr data-href="<?= url('admin/orders/' . $order->id) ?>">
                             <td class="td-muted">#<?= e($order->id) ?></td>
                             <td class="td-name"><?= e($order->customer_name) ?></td>
-                            <td>$<?= number_format((float) $order->total_price, 2) ?></td>
+                            <td><?= formatPrice($order->total_price) ?></td>
                             <td><span class="badge badge--<?= e($order->payment_status) ?>"><?= e($order->payment_status) ?></span></td>
                             <td><span class="badge badge--<?= e($order->status) ?>"><?= e($order->status) ?></span></td>
                             <td class="td-muted"><?= e(date('M d, Y', strtotime($order->created_at))) ?></td>

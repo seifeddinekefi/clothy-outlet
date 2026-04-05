@@ -72,7 +72,7 @@ function acct_badge(string $status): string {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <div class="acct-stat-body">
-              <div class="acct-stat-num">$<?= number_format($_total, 2) ?></div>
+              <div class="acct-stat-num"><?= formatPrice($_total) ?></div>
               <div class="acct-stat-lbl">Total Spent</div>
             </div>
           </div>
@@ -128,7 +128,7 @@ function acct_badge(string $status): string {
               <div class="acct-order-row">
                 <span class="acct-order-id">#<?= str_pad((string)$o->id, 5, '0', STR_PAD_LEFT) ?></span>
                 <span class="acct-order-date"><?= date('M j, Y', strtotime($o->created_at)) ?></span>
-                <span class="acct-order-total">$<?= number_format((float)$o->total_price, 2) ?></span>
+                <span class="acct-order-total"><?= formatPrice($o->total_price) ?></span>
                 <?= acct_badge($o->status ?? 'pending') ?>
               </div>
             <?php endforeach ?>

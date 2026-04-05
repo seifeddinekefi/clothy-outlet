@@ -452,9 +452,9 @@ $_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 1
 
         <!-- Price -->
         <div class="pd-price-wrap">
-          <span class="pd-price">$<?= number_format((float) $_p->price, 2) ?></span>
+          <span class="pd-price"><?= formatPrice($_p->price) ?></span>
           <?php if ($_hasComparePrice): ?>
-            <span class="pd-price-original">$<?= number_format((float) $_p->compare_price, 2) ?></span>
+            <span class="pd-price-original"><?= formatPrice($_p->compare_price) ?></span>
             <span class="pd-price-discount">Save <?= $_discount ?>%</span>
           <?php endif; ?>
         </div>
@@ -538,15 +538,15 @@ $_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 1
         <div class="pd-trust">
           <div class="pd-trust-item">
             <span class="pd-trust-icon">🚚</span>
-            <span>Free shipping over $150</span>
+            <span>Flat shipping: <?= formatPrice(defined('SHIPPING_FEE') ? SHIPPING_FEE : 8) ?></span>
           </div>
           <div class="pd-trust-item">
             <span class="pd-trust-icon">↺</span>
             <span>7-day easy returns</span>
           </div>
           <div class="pd-trust-item">
-            <span class="pd-trust-icon">💳</span>
-            <span>Cash on delivery</span>
+            <span class="pd-trust-icon">📦</span>
+            <span>Inspect before payment</span>
           </div>
         </div>
 
@@ -570,7 +570,7 @@ $_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 1
             </button>
             <div class="pd-accordion-content">
               <div class="pd-accordion-inner">
-                Free shipping on orders over $150. Standard delivery takes 3-5 business days. 
+                Flat shipping fee of <?= formatPrice(defined('SHIPPING_FEE') ? SHIPPING_FEE : 8) ?>. Standard delivery takes 3-5 business days.
                 Easy returns within 7 days of delivery — no questions asked.
               </div>
             </div>

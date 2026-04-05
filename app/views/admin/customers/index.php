@@ -48,7 +48,7 @@
                             <td><?= $c->phone ? e($c->phone) : '<span class="text-muted">—</span>' ?></td>
                             <td><?= $c->city  ? e($c->city)  : '<span class="text-muted">—</span>' ?></td>
                             <td><?= e($c->order_count) ?></td>
-                            <td>$<?= number_format((float) $c->total_spent, 2) ?></td>
+                            <td><?= formatPrice($c->total_spent) ?></td>
                             <td><?= e(date('M d, Y', strtotime($c->created_at))) ?></td>
                             <td class="table-actions">
                                 <a href="<?= url('admin/customers/' . $c->id) ?>"

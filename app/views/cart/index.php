@@ -6,7 +6,7 @@
  */
 $_items    = $items    ?? [];
 $_subtotal = $subtotal ?? 0;
-$_shipping = $_subtotal >= 150 ? 0 : 9.99;
+$_shipping = defined('SHIPPING_FEE') ? (float) SHIPPING_FEE : 8.00;
 $_total    = $_subtotal + $_shipping;
 ?>
 <?php $view->startSection('head') ?>
@@ -467,7 +467,7 @@ $_total    = $_subtotal + $_shipping;
                     <?= htmlspecialchars($p->name) ?>
                   </a>
                   <span class="cart-item-meta">
-                    $<?= number_format((float)$p->price, 2) ?> each
+                    <?= formatPrice($p->price) ?> each
                     <?php if (!empty($item['size'])): ?> &middot; Size: <?= htmlspecialchars($item['size']) ?><?php endif ?>
                       <?php if (!empty($p->sku)): ?> &middot; <?= htmlspecialchars($p->sku) ?><?php endif ?>
                   </span>
@@ -487,7 +487,7 @@ $_total    = $_subtotal + $_shipping;
 
                 <!-- Line total -->
                 <div class="cart-item-price">
-                  $<?= number_format($item['lineTotal'], 2) ?>
+                  <?= formatPrice($item['lineTotal']) ?>
                   <span class="cart-item-price-unit">line total</span>
                 </div>
 
@@ -518,27 +518,17 @@ $_total    = $_subtotal + $_shipping;
 
             <div class="summary-row">
               <span>Subtotal</span>
-              <span>$<?= number_format($_subtotal, 2) ?></span>
+              <span><?= formatPrice($_subtotal) ?></span>
             </div>
 
             <div class="summary-row">
               <span>Shipping</span>
-              <?php if ($_shipping === 0): ?>
-                <span class="summary-free">Free</span>
-              <?php else: ?>
-                <span>$<?= number_format($_shipping, 2) ?></span>
-              <?php endif ?>
+              <span><?= formatPrice($_shipping) ?></span>
             </div>
-
-            <?php if ($_shipping > 0): ?>
-              <p class="summary-shipping-note">
-                Add $<?= number_format(150 - $_subtotal, 2) ?> more for free shipping
-              </p>
-            <?php endif ?>
 
             <div class="summary-row total">
               <span>Total</span>
-              <span>$<?= number_format($_total, 2) ?></span>
+              <span><?= formatPrice($_total) ?></span>
             </div>
 
             <a href="<?= url('checkout') ?>" class="btn-checkout">Proceed to Checkout &rarr;</a>

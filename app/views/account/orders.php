@@ -72,7 +72,7 @@ if (!function_exists('acct_badge')) {
                 <tr>
                   <td><strong style="font-family:monospace">#<?= str_pad((string)$o->id, 5, '0', STR_PAD_LEFT) ?></strong></td>
                   <td><?= date('M j, Y', strtotime($o->created_at)) ?></td>
-                  <td><strong>$<?= number_format((float)$o->total_price, 2) ?></strong></td>
+                  <td><strong><?= formatPrice($o->total_price) ?></strong></td>
                   <td style="text-transform:capitalize;font-size:.8rem;color:#7a7570"><?= htmlspecialchars(str_replace('_', ' ', $o->payment_status ?? '')) ?></td>
                   <td><?= acct_badge($o->status ?? 'pending') ?></td>
                   <td>

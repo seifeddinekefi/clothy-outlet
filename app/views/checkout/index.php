@@ -178,6 +178,16 @@ $_customer = $customer ?? null;
         flex-shrink: 0;
     }
 
+    .pay-policy-note {
+        margin-top: .85rem;
+        font-size: .78rem;
+        color: #4a4743;
+        background: #fdfaf5;
+        border: 1px solid #ece2d0;
+        border-radius: 8px;
+        padding: .65rem .75rem;
+    }
+
     /* ── Order Summary card ── */
     .co-summary {
         background: #fff;
@@ -427,7 +437,7 @@ $_customer = $customer ?? null;
                                 </span>
                                 <span class="pay-option-info">
                                     <span class="pay-option-name">Cash on Delivery</span>
-                                    <span class="pay-option-desc">Pay when your order arrives</span>
+                                    <span class="pay-option-desc">Open the package first, then pay on delivery</span>
                                 </span>
                             </label>
 
@@ -460,6 +470,8 @@ $_customer = $customer ?? null;
                             </label>
 
                         </div>
+
+                        <p class="pay-policy-note">Package inspection is available before payment for Cash on Delivery orders.</p>
                     </div>
 
                 </div>
@@ -496,7 +508,7 @@ $_customer = $customer ?? null;
                                             <?php if (!empty($item['size'])): ?> · Size: <?= htmlspecialchars($item['size']) ?><?php endif ?>
                                         </span>
                                     </div>
-                                    <span class="co-sum-price">$<?= number_format($item['lineTotal'], 2) ?></span>
+                                    <span class="co-sum-price"><?= formatPrice($item['lineTotal']) ?></span>
                                 </div>
                             <?php endforeach ?>
                         </div>
@@ -520,26 +532,22 @@ $_customer = $customer ?? null;
 
                         <div class="co-sum-row">
                             <span>Subtotal</span>
-                            <span>$<?= number_format($_subtotal, 2) ?></span>
+                            <span><?= formatPrice($_subtotal) ?></span>
                         </div>
                         <?php if ($_discount > 0): ?>
                             <div class="co-sum-row">
                                 <span>Discount</span>
-                                <span style="color:#3a7a3a;">-$<?= number_format($_discount, 2) ?></span>
+                                <span style="color:#3a7a3a;">-<?= formatPrice($_discount) ?></span>
                             </div>
                         <?php endif; ?>
                         <div class="co-sum-row">
                             <span>Shipping</span>
-                            <?php if ($_shipping === 0.0 || $_shipping === 0): ?>
-                                <span class="co-sum-free">Free</span>
-                            <?php else: ?>
-                                <span>$<?= number_format($_shipping, 2) ?></span>
-                            <?php endif ?>
+                            <span><?= formatPrice($_shipping) ?></span>
                         </div>
 
                         <div class="co-sum-row total">
                             <span>Total</span>
-                            <span>$<?= number_format($_total, 2) ?></span>
+                            <span><?= formatPrice($_total) ?></span>
                         </div>
 
                         <button type="submit" class="btn-place">Place Order &rarr;</button>

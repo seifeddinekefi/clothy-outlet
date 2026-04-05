@@ -58,6 +58,11 @@ define('CSRF_TOKEN_TTL',  3600);           // 1 hour
 // ─── Pagination ──────────────────────────────────────────────
 define('PER_PAGE', 12);
 
+// ─── Currency & Shipping ─────────────────────────────────────
+define('CURRENCY_SYMBOL', 'TND');
+define('CURRENCY_POSITION', 'after');  // 'before' for "TND 99.00" or 'after' for "99.00 TND"
+define('SHIPPING_FEE', 8.00);
+
 // ─── Uploads ─────────────────────────────────────────────────
 define('UPLOAD_MAX_SIZE',  5 * 1024 * 1024);  // 5 MB
 define('UPLOAD_ALLOWED_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
