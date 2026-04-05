@@ -1,249 +1,193 @@
-# 🛍️ Clothy Outlet
+# Clothy Outlet
 
-A modern, full-featured e-commerce platform built with PHP for fashion retail. Clothy Outlet provides a complete online shopping experience with a powerful admin dashboard for store management.
+Clothy Outlet is a PHP e-commerce website built with a custom MVC architecture. It includes a complete customer shopping flow and an admin panel for day-to-day store operations.
 
 ![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4?style=flat-square&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![Deploy](https://img.shields.io/github/actions/workflow/status/seifeddinekefi/clothy-outlet/deploy.yml?branch=main&style=flat-square&label=Deploy)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
----
+## Project Description
 
-## ✨ Features
+This project targets fashion retail use cases and provides:
 
-### 🛒 Customer Features
+- Customer storefront with product browsing, cart, checkout, and account pages.
+- Admin dashboard with management tools for products, categories, orders, customers, coupons, and settings.
+- Secure request handling and session/authentication protections suitable for production hosting.
 
-- **Product Browsing** - Browse products by category with search and filtering
-- **Shopping Cart** - Add/remove items, update quantities
-- **User Accounts** - Registration, login, profile management
-- **Order Management** - Track orders, view order history
-- **Wishlist** - Save favorite items for later
-- **Secure Checkout** - Safe and streamlined checkout process
+## Features
 
-### 🔧 Admin Dashboard
+### Customer Features
 
-- **Dashboard Analytics** - Sales overview, order statistics, revenue charts
-- **Product Management** - Add, edit, delete products with image uploads
-- **Category Management** - Organize products into categories
-- **Order Management** - View, update, and process customer orders
-- **Customer Management** - View and manage customer accounts
-- **Admin Roles** - Role-based access control for admin users
+- Product catalog browsing with category and search support.
+- Product details with images, size selection, and stock-aware cart actions.
+- Shopping cart with quantity updates and checkout summary.
+- Account area: profile, order history, and wishlist.
+- Checkout with coupon support and order success page.
+- Payment UX updates including "Open the package first, then pay on delivery" for Cash on Delivery.
 
-### 🔒 Security Features
+### Admin Features
 
-- **CSRF Protection** - Token-based form protection
-- **SQL Injection Prevention** - PDO prepared statements throughout
-- **XSS Protection** - Output escaping with `htmlspecialchars()`
-- **Rate Limiting** - Brute-force protection on login endpoints
-- **Secure Sessions** - HttpOnly, SameSite, and Secure cookie flags
-- **Password Hashing** - bcrypt with proper cost factor
-- **Environment Variables** - Secrets stored in `.env` file
+- Dashboard metrics for revenue, orders, and top products.
+- Product and category CRUD.
+- Order and payment status updates.
+- Customer management.
+- Coupon CRUD and application support in checkout.
+- Store and account settings management.
 
----
+### Security and Reliability
 
-## 🛠️ Tech Stack
+- CSRF protection for state-changing requests.
+- PDO prepared statements to reduce SQL injection risk.
+- Output escaping for XSS mitigation.
+- Rate limiting for login and password reset actions.
+- Secure password hashing and environment-based configuration.
 
-| Layer             | Technology                      |
-| ----------------- | ------------------------------- |
-| **Backend**       | PHP 8.0+ (Custom MVC Framework) |
-| **Database**      | MySQL 8.0+ / MariaDB            |
-| **Frontend**      | HTML5, CSS3, JavaScript         |
-| **CSS Framework** | Bootstrap 5                     |
-| **Server**        | Apache (XAMPP compatible)       |
+### Recent Improvements
 
----
+- Unified price formatting with centralized helper across customer and admin views.
+- Tunisian currency display update (TND).
+- Flat shipping fee configuration set to 8.00 TND.
+- Checkout/payment messaging improvements for package inspection before payment.
+- CI/CD deployment pipeline added with GitHub Actions.
 
-## 📦 Installation
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend | PHP 8+ (custom MVC) |
+| Database | MySQL / MariaDB |
+| Frontend | HTML, CSS, JavaScript |
+| Server | Apache (XAMPP compatible) |
+| CI/CD | GitHub Actions + FTP Deploy |
+
+## Installation and Setup
 
 ### Prerequisites
 
-- PHP 8.0 or higher
+- PHP 8.0+
 - MySQL 8.0+ or MariaDB
-- Apache web server (with mod_rewrite enabled)
-- XAMPP, WAMP, or similar local development environment
+- Apache with mod_rewrite enabled
+- XAMPP/WAMP/LAMP (or equivalent)
 
-### Steps
+### 1. Clone Repository
 
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/seifeddinekefi/clothy-outlet.git
-   cd clothy-outlet
-   ```
-
-2. **Set up the database**
-
-   ```bash
-   # Create database and import schema
-   mysql -u root -p < database/clothy_outlet.sql
-
-   # Import sample data (optional)
-   mysql -u root -p clothy_outlet < database/seed.sql
-   ```
-
-3. **Configure environment**
-
-   ```bash
-   # Copy the example environment file
-   cp .env.example .env
-
-   # Edit .env with your database credentials
-   ```
-
-4. **Configure your `.env` file**
-
-   ```env
-   APP_ENV=development
-   APP_DEBUG=true
-   APP_URL=http://localhost/clothy/public
-
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_NAME=clothy_outlet
-   DB_USER=root
-   DB_PASS=your_password
-   ```
-
-5. **Set up Apache virtual host** (or use XAMPP)
-   - Point your web server to the `public/` directory
-   - Ensure `mod_rewrite` is enabled
-
-6. **Access the application**
-   - Frontend: `http://localhost/clothy/public`
-   - Admin Panel: `http://localhost/clothy/public/admin`
-
----
-
-## 📁 Project Structure
-
-```
-clothy/
-├── app/
-│   ├── controllers/      # Application controllers
-│   │   └── Admin/        # Admin panel controllers
-│   ├── middleware/       # Request middleware
-│   ├── models/           # Database models
-│   └── views/            # View templates
-│       ├── admin/        # Admin panel views
-│       ├── auth/         # Authentication views
-│       ├── errors/       # Error pages
-│       └── partials/     # Reusable components
-├── config/
-│   ├── config.php        # Application configuration
-│   └── routes.php        # Route definitions
-├── core/                 # Framework core classes
-│   ├── Controller.php
-│   ├── Database.php
-│   ├── EnvLoader.php
-│   ├── Mailer.php
-│   ├── Model.php
-│   ├── Router.php
-│   ├── Session.php
-│   └── View.php
-├── database/
-│   ├── clothy_outlet.sql # Database schema
-│   └── seed.sql          # Sample data
-├── public/               # Web root
-│   ├── assets/           # CSS, JS, images
-│   ├── .htaccess         # Apache rewrite rules
-│   └── index.php         # Application entry point
-├── storage/
-│   └── logs/             # Application logs
-├── uploads/              # User uploads
-├── .env.example          # Environment template
-├── .gitignore
-└── README.md
+```bash
+git clone https://github.com/seifeddinekefi/clothy-outlet.git
+cd clothy-outlet
 ```
 
----
+### 2. Configure Environment
 
-## 🖼️ Screenshots
+Linux/macOS:
 
-### Homepage
+```bash
+cp .env.example .env
+```
 
-![Homepage](screenshots/homepage.png)
+Windows PowerShell:
 
-### Product Listing
+```powershell
+Copy-Item .env.example .env
+```
 
-![Products](screenshots/products.png)
+Update values in .env (database, app URL, mail settings if needed).
 
-### Admin Dashboard
+### 3. Create Database and Import Schema
 
-![Admin Dashboard](screenshots/admin-dashboard.png)
+```bash
+mysql -u root -p < database/clothy_outlet.sql
+```
 
-### Shopping Cart
+Optional sample data:
 
-![Cart](screenshots/cart.png)
+```bash
+mysql -u root -p clothy_outlet < database/seed.sql
+```
 
-> 📝 _Screenshots coming soon_
+### 4. Serve the App
 
----
+- Point Apache document root to the public directory.
+- Or run through XAMPP with project under htdocs and access via the public entry point.
 
-## 🚀 Usage
+Default local URLs:
 
-### Customer Flow
+- Storefront: http://localhost/clothy/public
+- Admin: http://localhost/clothy/public/admin
 
-1. Browse products on the homepage or by category
-2. Add items to cart
-3. Create an account or login
-4. Proceed to checkout
-5. Track your order in your account
+## Usage Guide
 
-### Admin Flow
+### Customer
 
-1. Login at `/admin`
-2. View dashboard for sales overview
-3. Manage products, categories, and orders
-4. View customer information
-5. Update order statuses
+1. Browse or search products.
+2. Add products to cart/wishlist.
+3. Sign up or log in.
+4. Apply coupon (optional) during checkout.
+5. Place order and track status from account pages.
 
----
+### Admin
 
-## 🔮 Future Improvements
+1. Sign in from /admin.
+2. Manage catalog (products/categories).
+3. Process orders and payment statuses.
+4. Manage customers, coupons, and settings.
 
-- [ ] Payment gateway integration (Stripe, PayPal)
-- [ ] Email notifications for orders
-- [ ] Product reviews and ratings
-- [ ] Inventory management with stock alerts
-- [ ] Coupon and discount system
-- [ ] Multi-language support
-- [ ] API endpoints for mobile app
-- [ ] Advanced analytics dashboard
-- [ ] Social media login (OAuth)
-- [ ] Product image gallery with zoom
+## CI/CD Pipeline (GitHub Actions)
 
----
+Deployment workflow is defined in .github/workflows/deploy.yml.
 
-## 🤝 Contributing
+Pipeline behavior:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Trigger: push to main.
+- Runner: ubuntu-latest.
+- Steps:
+  - Checkout repository.
+  - Deploy via SamKirkland/FTP-Deploy-Action to InfinityFree.
+- Sensitive credentials are read from repository secrets:
+  - FTP_USERNAME
+  - FTP_PASSWORD
+- Exclusions include .env and git metadata to avoid leaking secrets and unnecessary files.
 
----
+## Deployment Details
 
-## 📄 License
+- Current target: InfinityFree via FTP.
+- Remote directory: /htdocs/.
+- .env is intentionally excluded from deployment and should be configured directly on the host.
+- Recommended flow: merge changes into main to trigger automatic deployment.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Project Structure
 
----
+```text
+app/        controllers, models, middleware, views
+config/     app configuration and routes
+core/       MVC core classes and helpers
+database/   SQL schema and optional seed data
+public/     web entry point and static assets
+storage/    logs
+uploads/    uploaded files
+```
 
-## 👤 Author
+## Future Improvements
 
-**Seifeddine Kefi**
+- Full online payment gateway integration.
+- Automated test suite for key flows.
+- Product reviews and ratings.
+- API layer for mobile/client integrations.
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit and push changes.
+4. Open a Pull Request.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
+
+## Author
+
+Seifeddine Kefi
 
 - GitHub: [@seifeddinekefi](https://github.com/seifeddinekefi)
-- LinkedIn: [Seifeddine Kefi](https://www.linkedin.com/in/seifeddinekefi/)
-
----
-
-## 🙏 Acknowledgments
-
-- Bootstrap for the UI components
-- Font Awesome for icons
-- All contributors who help improve this project
-
----
-
-<p align="center">Made with ❤️ for fashion lovers</p>
+- LinkedIn: [Seifeddine Kefi](https://www.linkedin.com/in/seifeddine-kefi/)
