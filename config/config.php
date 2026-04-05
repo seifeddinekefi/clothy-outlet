@@ -59,8 +59,8 @@ define('CSRF_TOKEN_TTL',  3600);           // 1 hour
 define('PER_PAGE', 12);
 
 // ─── Currency & Shipping ─────────────────────────────────────
-define('CURRENCY_SYMBOL', 'TND');
-define('CURRENCY_POSITION', 'after');  // 'before' for "TND 99.00" or 'after' for "99.00 TND"
+define('APP_CURRENCY_SYMBOL', 'TND');
+define('APP_CURRENCY_POSITION', 'after');  // 'before' for "TND 99.00" or 'after' for "99.00 TND"
 define('SHIPPING_FEE', 8.00);
 
 // ─── Uploads ─────────────────────────────────────────────────

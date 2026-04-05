@@ -170,8 +170,8 @@ function asset(string $path): string
 function formatPrice($amount, int $decimals = 2): string
 {
     $formatted = number_format((float) $amount, $decimals);
-    $symbol = defined('CURRENCY_SYMBOL') ? CURRENCY_SYMBOL : 'TND';
-    $position = defined('CURRENCY_POSITION') ? CURRENCY_POSITION : 'after';
+    $symbol = defined('APP_CURRENCY_SYMBOL') ? APP_CURRENCY_SYMBOL : 'TND';
+    $position = defined('APP_CURRENCY_POSITION') ? APP_CURRENCY_POSITION : 'after';
 
     if ($position === 'after') {
         return $formatted . ' ' . $symbol;
