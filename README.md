@@ -23,17 +23,30 @@ This project targets fashion retail use cases and provides:
 - Product details with images, size selection, and stock-aware cart actions.
 - Shopping cart with quantity updates and checkout summary.
 - Account area: profile, order history, and wishlist.
-- Checkout with coupon support and order success page.
-- Payment UX updates including "Open the package first, then pay on delivery" for Cash on Delivery.
+- **Guest checkout** — complete purchases without creating an account.
+- **Guest order tracking** — track orders via unique token URL without login.
+- Checkout with Tunisia governorates dropdown and coupon support.
+- Payment: Cash on Delivery with "Open the package first, then pay" messaging.
+- **Email notifications** — order confirmations, shipping updates, and delivery notifications.
+- Optional account creation after guest checkout for returning customers.
 
 ### Admin Features
 
 - Dashboard metrics for revenue, orders, and top products.
 - Product and category CRUD.
-- Order and payment status updates.
-- Customer management.
+- Order and payment status updates with **automatic email notifications**.
+- Customer management (includes guest customer records).
 - Coupon CRUD and application support in checkout.
 - Store and account settings management.
+
+### Email System
+
+- **Order confirmation** — sent immediately after checkout (includes tracking link for guests).
+- **Welcome email** — sent when customers register or convert from guest to user.
+- **Shipped notification** — sent when admin marks order as "shipped".
+- **Delivered notification** — sent when admin marks order as "delivered".
+- **Password reset** — secure token-based password recovery.
+- Configurable drivers: SMTP (Gmail), PHP mail(), or log (development).
 
 ### Security and Reliability
 
@@ -45,11 +58,13 @@ This project targets fashion retail use cases and provides:
 
 ### Recent Improvements
 
-- Unified price formatting with centralized helper across customer and admin views.
-- Tunisian currency display update (TND).
+- Guest checkout flow with optional post-purchase account creation.
+- Email notification system with Gmail SMTP support.
+- Tunisia governorates dropdown for shipping addresses.
+- Guest order tracking via secure token URLs.
+- Unified price formatting with centralized helper (TND currency).
 - Flat shipping fee configuration set to 8.00 TND.
-- Checkout/payment messaging improvements for package inspection before payment.
-- CI/CD deployment pipeline added with GitHub Actions.
+- CI/CD deployment pipeline with GitHub Actions.
 
 ## Tech Stack
 
@@ -59,6 +74,7 @@ This project targets fashion retail use cases and provides:
 | Database | MySQL / MariaDB |
 | Frontend | HTML, CSS, JavaScript |
 | Server | Apache (XAMPP compatible) |
+| Email | SMTP (Gmail) / PHP mail() |
 | CI/CD | GitHub Actions + FTP Deploy |
 
 ## Installation and Setup
@@ -91,12 +107,41 @@ Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-Update values in .env (database, app URL, mail settings if needed).
+Update values in .env:
+
+```env
+# Application
+APP_URL=http://localhost/clothy/public
+
+# Database
+DB_HOST=localhost
+DB_NAME=clothy_outlet
+DB_USER=root
+DB_PASS=
+
+# Email (Gmail SMTP example)
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=your-email@gmail.com
+MAIL_FROM_NAME="Clothy Outlet"
+```
+
+For development, use `MAIL_DRIVER=log` to write emails to `storage/logs/mail.log`.
 
 ### 3. Create Database and Import Schema
 
 ```bash
 mysql -u root -p < database/clothy_outlet.sql
+```
+
+For existing databases, run the guest checkout migration:
+
+```bash
+mysql -u root -p clothy_outlet < database/migrate_guest_checkout.sql
 ```
 
 Optional sample data:
@@ -121,15 +166,17 @@ Default local URLs:
 
 1. Browse or search products.
 2. Add products to cart/wishlist.
-3. Sign up or log in.
+3. **Checkout as guest or sign in** — guests only need email, phone, and address.
 4. Apply coupon (optional) during checkout.
-5. Place order and track status from account pages.
+5. Place order and receive confirmation email.
+6. **Track order** via email link (guests) or account pages (registered users).
+7. Optionally create an account after checkout for faster future orders.
 
 ### Admin
 
 1. Sign in from /admin.
 2. Manage catalog (products/categories).
-3. Process orders and payment statuses.
+3. Process orders — **status changes trigger customer email notifications**.
 4. Manage customers, coupons, and settings.
 
 ## CI/CD Pipeline (GitHub Actions)
@@ -161,9 +208,9 @@ Pipeline behavior:
 app/        controllers, models, middleware, views
 config/     app configuration and routes
 core/       MVC core classes and helpers
-database/   SQL schema and optional seed data
+database/   SQL schema, migrations, and seed data
 public/     web entry point and static assets
-storage/    logs
+storage/    logs (including mail.log for development)
 uploads/    uploaded files
 ```
 
