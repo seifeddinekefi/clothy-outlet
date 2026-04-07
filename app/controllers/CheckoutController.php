@@ -364,6 +364,13 @@ class CheckoutController extends Controller
         }
         $orderItemModel->bulkCreate((int) $orderId, $lineItems);
 
+        // ── Send order confirmation email ─────────────────────
+        $this->sendOrderConfirmationEmail(
+            $email ?? ($isGuest ? null : Session::user()['email'] ?? null),
+            (int) $orderId,
+            $trackingToken
+        );
+
         // ── Clear cart ────────────────────────────────────────
         Session::set('cart', []);
         Session::set('checkout_coupon', null);
@@ -376,6 +383,36 @@ class CheckoutController extends Controller
         Session::set('last_order_has_existing_account', $hasExistingAccount);
 
         $this->redirect(url('checkout/success'));
+    }
+
+    /**
+     * Send order confirmation email.
+     */
+    private function sendOrderConfirmationEmail(?string $email, int $orderId, ?string $trackingToken): void
+    {
+        if (!$email) {
+            return;
+        }
+
+        try {
+            $orderModel = new Order();
+            $order = $orderModel->findWithCustomer($orderId);
+
+            if (!$order) {
+                return;
+            }
+
+            $orderItemModel = new OrderItem();
+            $orderItems = $orderItemModel->findByOrder($orderId);
+
+            $trackingUrl = $trackingToken ? url('order/track/' . $trackingToken) : null;
+
+            $mailer = new Mailer();
+            $mailer->sendOrderConfirmation($email, $order, $orderItems, $trackingUrl);
+        } catch (Exception $e) {
+            // Log error but don't interrupt checkout flow
+            error_log('Failed to send order confirmation email: ' . $e->getMessage());
+        }
     }
 
     // ─────────────────────────────────────────────────────────
@@ -471,6 +508,14 @@ class CheckoutController extends Controller
         if (!$converted) {
             $this->flash('error', 'Could not create account. Please try again.');
             $this->redirect(url());
+        }
+
+        // Send welcome email
+        try {
+            $mailer = new Mailer();
+            $mailer->sendWelcome($customer->email, $customer->name);
+        } catch (Exception $e) {
+            error_log('Failed to send welcome email: ' . $e->getMessage());
         }
 
         // Log the user in

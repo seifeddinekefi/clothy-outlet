@@ -86,10 +86,43 @@ class OrderController extends BaseAdminController
             $this->redirect(url('admin/orders/' . (int) $id));
         }
 
+        $oldStatus = $order->status;
         $this->orderModel->updateStatus((int) $id, $status);
+
+        // Send email notification for shipped/delivered status
+        if ($status !== $oldStatus && in_array($status, ['shipped', 'delivered'], true)) {
+            $this->sendStatusEmail((int) $id, $status);
+        }
 
         Session::flash('success', 'Order status updated to "' . e($status) . '".');
         $this->redirect(url('admin/orders/' . (int) $id));
+    }
+
+    /**
+     * Send order status update email
+     */
+    private function sendStatusEmail(int $orderId, string $status): void
+    {
+        try {
+            $order = $this->orderModel->findWithCustomer($orderId);
+            if (!$order || empty($order->customer_email)) {
+                return;
+            }
+
+            $trackingUrl = !empty($order->tracking_token)
+                ? url('order/track/' . $order->tracking_token)
+                : null;
+
+            $mailer = new Mailer();
+
+            if ($status === 'shipped') {
+                $mailer->sendOrderShipped($order->customer_email, $order, $trackingUrl);
+            } elseif ($status === 'delivered') {
+                $mailer->sendOrderDelivered($order->customer_email, $order);
+            }
+        } catch (Exception $e) {
+            error_log('Failed to send order status email: ' . $e->getMessage());
+        }
     }
 
     // ── Update Payment Status ───────────────────────────────

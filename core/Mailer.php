@@ -72,6 +72,76 @@ class Mailer
     }
 
     /**
+     * Send order confirmation email.
+     *
+     * @param string $to            Recipient email
+     * @param object $order         Order object with details
+     * @param array  $orderItems    Array of order items
+     * @param string|null $trackingUrl  Guest tracking URL (optional)
+     * @return bool
+     */
+    public function sendOrderConfirmation(string $to, object $order, array $orderItems, ?string $trackingUrl = null): bool
+    {
+        $orderNumber = str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+        $subject = "Order Confirmed #{$orderNumber} - " . APP_NAME;
+
+        $body = $this->buildOrderConfirmationEmail($order, $orderItems, $trackingUrl);
+
+        return $this->send($to, $subject, $body);
+    }
+
+    /**
+     * Send welcome email to new users.
+     *
+     * @param string $to        Recipient email
+     * @param string $userName  User's name
+     * @return bool
+     */
+    public function sendWelcome(string $to, string $userName = 'Customer'): bool
+    {
+        $subject = 'Welcome to ' . APP_NAME . '!';
+
+        $body = $this->buildWelcomeEmail($userName);
+
+        return $this->send($to, $subject, $body);
+    }
+
+    /**
+     * Send order shipped notification.
+     *
+     * @param string $to            Recipient email
+     * @param object $order         Order object
+     * @param string|null $trackingUrl  Guest tracking URL (optional)
+     * @return bool
+     */
+    public function sendOrderShipped(string $to, object $order, ?string $trackingUrl = null): bool
+    {
+        $orderNumber = str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+        $subject = "Your Order #{$orderNumber} Has Been Shipped! - " . APP_NAME;
+
+        $body = $this->buildOrderShippedEmail($order, $trackingUrl);
+
+        return $this->send($to, $subject, $body);
+    }
+
+    /**
+     * Send order delivered notification.
+     *
+     * @param string $to            Recipient email
+     * @param object $order         Order object
+     * @return bool
+     */
+    public function sendOrderDelivered(string $to, object $order): bool
+    {
+        $orderNumber = str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+        $subject = "Your Order #{$orderNumber} Has Been Delivered! - " . APP_NAME;
+
+        $body = $this->buildOrderDeliveredEmail($order);
+
+        return $this->send($to, $subject, $body);
+    }
+
+    /**
      * Build the password reset email HTML.
      */
     private function buildPasswordResetEmail(string $resetUrl, string $userName): string
@@ -114,6 +184,347 @@ class Mailer
         <div class="footer">
             <p>&copy; {$appName}. All rights reserved.</p>
             <p>This is an automated message, please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * Build the order confirmation email HTML.
+     */
+    private function buildOrderConfirmationEmail(object $order, array $orderItems, ?string $trackingUrl): string
+    {
+        $appName = APP_NAME;
+        $orderNumber = str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+        $orderDate = date('F j, Y', strtotime($order->created_at));
+        $customerName = $order->customer_name ?? 'Customer';
+        $firstName = explode(' ', $customerName)[0];
+
+        // Build order items HTML
+        $itemsHtml = '';
+        foreach ($orderItems as $item) {
+            $itemName = htmlspecialchars($item->product_name ?? 'Product');
+            $itemQty = (int) $item->quantity;
+            $itemSize = !empty($item->size) ? " (Size: {$item->size})" : '';
+            $itemPrice = number_format((float) $item->price * $itemQty, 2);
+            
+            $itemsHtml .= <<<ITEM
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                    <strong>{$itemName}</strong>{$itemSize}<br>
+                    <span style="color: #6b7280; font-size: 13px;">Qty: {$itemQty}</span>
+                </td>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; white-space: nowrap;">
+                    {$itemPrice} TND
+                </td>
+            </tr>
+ITEM;
+        }
+
+        // Format totals
+        $subtotal = number_format((float) ($order->subtotal ?? 0), 2);
+        $shipping = (float) ($order->shipping_fee ?? 0) === 0.0 ? 'Free' : number_format((float) $order->shipping_fee, 2) . ' TND';
+        $discount = (float) ($order->discount ?? 0) > 0 ? '-' . number_format((float) $order->discount, 2) . ' TND' : '';
+        $total = number_format((float) ($order->total_price ?? 0), 2);
+
+        // Discount row
+        $discountRow = '';
+        if ((float) ($order->discount ?? 0) > 0) {
+            $discountRow = <<<DISC
+            <tr>
+                <td style="padding: 8px 12px; color: #059669;">Discount</td>
+                <td style="padding: 8px 12px; text-align: right; color: #059669;">{$discount}</td>
+            </tr>
+DISC;
+        }
+
+        // Shipping address
+        $address = htmlspecialchars($order->customer_address ?? '');
+        $city = htmlspecialchars($order->customer_city ?? '');
+        $phone = htmlspecialchars($order->customer_phone ?? '');
+
+        // Tracking section for guests
+        $trackingSection = '';
+        if ($trackingUrl) {
+            $trackingSection = <<<TRACK
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center;">
+                <p style="margin: 0 0 10px; color: #065f46; font-weight: 600;">📦 Track Your Order</p>
+                <p style="margin: 0; font-size: 13px;">
+                    <a href="{$trackingUrl}" style="color: #059669; word-break: break-all;">{$trackingUrl}</a>
+                </p>
+            </div>
+TRACK;
+        }
+
+        // Payment method
+        $paymentMethod = ucwords(str_replace('_', ' ', $order->payment_method ?? 'cash on delivery'));
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f3f4f6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #0a0a0a; color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">{$appName}</h1>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+            <!-- Success Icon -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="display: inline-block; width: 60px; height: 60px; background: #ecfdf5; border-radius: 50%; line-height: 60px;">
+                    <span style="font-size: 30px;">✓</span>
+                </div>
+            </div>
+            
+            <h2 style="text-align: center; color: #059669; margin: 0 0 10px;">Order Confirmed!</h2>
+            <p style="text-align: center; color: #6b7280; margin: 0 0 25px;">Thank you for your order, {$firstName}!</p>
+            
+            <!-- Order Info -->
+            <div style="background: #f9fafb; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 5px 0; color: #6b7280;">Order Number:</td>
+                        <td style="padding: 5px 0; text-align: right; font-weight: bold;">#{$orderNumber}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #6b7280;">Order Date:</td>
+                        <td style="padding: 5px 0; text-align: right;">{$orderDate}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #6b7280;">Payment Method:</td>
+                        <td style="padding: 5px 0; text-align: right;">{$paymentMethod}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            {$trackingSection}
+            
+            <!-- Order Items -->
+            <h3 style="margin: 25px 0 15px; font-size: 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Order Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                {$itemsHtml}
+            </table>
+            
+            <!-- Totals -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px; background: #f9fafb; border-radius: 8px;">
+                <tr>
+                    <td style="padding: 8px 12px; color: #6b7280;">Subtotal</td>
+                    <td style="padding: 8px 12px; text-align: right;">{$subtotal} TND</td>
+                </tr>
+                {$discountRow}
+                <tr>
+                    <td style="padding: 8px 12px; color: #6b7280;">Shipping</td>
+                    <td style="padding: 8px 12px; text-align: right;">{$shipping}</td>
+                </tr>
+                <tr style="border-top: 2px solid #e5e7eb;">
+                    <td style="padding: 12px; font-weight: bold; font-size: 16px;">Total</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold; font-size: 16px;">{$total} TND</td>
+                </tr>
+            </table>
+            
+            <!-- Shipping Address -->
+            <h3 style="margin: 25px 0 15px; font-size: 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Shipping Address</h3>
+            <p style="margin: 0; color: #374151;">
+                <strong>{$customerName}</strong><br>
+                {$address}<br>
+                {$city}<br>
+                {$phone}
+            </p>
+            
+            <!-- Note -->
+            <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 15px; margin-top: 25px;">
+                <p style="margin: 0; color: #92400e; font-size: 14px;">
+                    <strong>📦 Cash on Delivery:</strong> Please have the exact amount ready ({$total} TND). You can inspect the package before payment.
+                </p>
+            </div>
+        </div>
+        <div style="padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p style="margin: 0 0 5px;">&copy; {$appName}. All rights reserved.</p>
+            <p style="margin: 0;">This is an automated message, please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * Build the welcome email HTML.
+     */
+    private function buildWelcomeEmail(string $userName): string
+    {
+        $appName = APP_NAME;
+        $firstName = explode(' ', $userName)[0];
+        $shopUrl = url('products');
+        $accountUrl = url('account');
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to {$appName}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f3f4f6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #0a0a0a; color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">{$appName}</h1>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+            <h2 style="text-align: center; margin: 0 0 20px;">Welcome, {$firstName}! 🎉</h2>
+            
+            <p>Thank you for creating an account with {$appName}. We're excited to have you!</p>
+            
+            <p>With your new account, you can:</p>
+            <ul style="color: #374151;">
+                <li>Track your orders in real-time</li>
+                <li>Save your shipping information for faster checkout</li>
+                <li>Create a wishlist of your favorite items</li>
+                <li>View your order history anytime</li>
+            </ul>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{$shopUrl}" style="display: inline-block; padding: 14px 35px; background: #0a0a0a; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Start Shopping</a>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px;">
+                You can access your account dashboard anytime at:<br>
+                <a href="{$accountUrl}" style="color: #0a0a0a;">{$accountUrl}</a>
+            </p>
+        </div>
+        <div style="padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p style="margin: 0 0 5px;">&copy; {$appName}. All rights reserved.</p>
+            <p style="margin: 0;">This is an automated message, please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * Build the order shipped email HTML.
+     */
+    private function buildOrderShippedEmail(object $order, ?string $trackingUrl): string
+    {
+        $appName = APP_NAME;
+        $orderNumber = str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+        $customerName = $order->customer_name ?? 'Customer';
+        $firstName = explode(' ', $customerName)[0];
+        $address = htmlspecialchars($order->customer_address ?? '');
+        $city = htmlspecialchars($order->customer_city ?? '');
+
+        $trackingSection = '';
+        if ($trackingUrl) {
+            $trackingSection = <<<TRACK
+            <p style="text-align: center;">
+                <a href="{$trackingUrl}" style="display: inline-block; padding: 14px 35px; background: #0a0a0a; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Track Your Order</a>
+            </p>
+TRACK;
+        }
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your Order Has Been Shipped</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f3f4f6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #0a0a0a; color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">{$appName}</h1>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+            <!-- Truck Icon -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 50px;">🚚</span>
+            </div>
+            
+            <h2 style="text-align: center; color: #2563eb; margin: 0 0 10px;">Your Order is On Its Way!</h2>
+            <p style="text-align: center; color: #6b7280; margin: 0 0 25px;">Order #{$orderNumber}</p>
+            
+            <p>Hi {$firstName},</p>
+            <p>Great news! Your order has been shipped and is on its way to you.</p>
+            
+            <div style="background: #f9fafb; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0 0 5px; font-weight: bold;">Shipping to:</p>
+                <p style="margin: 0; color: #6b7280;">
+                    {$customerName}<br>
+                    {$address}<br>
+                    {$city}
+                </p>
+            </div>
+            
+            {$trackingSection}
+            
+            <p style="color: #6b7280; font-size: 14px; margin-top: 25px;">
+                Please ensure someone is available to receive the package. Remember, you can inspect the package before payment.
+            </p>
+        </div>
+        <div style="padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p style="margin: 0 0 5px;">&copy; {$appName}. All rights reserved.</p>
+            <p style="margin: 0;">This is an automated message, please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * Build the order delivered email HTML.
+     */
+    private function buildOrderDeliveredEmail(object $order): string
+    {
+        $appName = APP_NAME;
+        $orderNumber = str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+        $customerName = $order->customer_name ?? 'Customer';
+        $firstName = explode(' ', $customerName)[0];
+        $shopUrl = url('products');
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your Order Has Been Delivered</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f3f4f6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #0a0a0a; color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">{$appName}</h1>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+            <!-- Check Icon -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 50px;">🎉</span>
+            </div>
+            
+            <h2 style="text-align: center; color: #059669; margin: 0 0 10px;">Order Delivered!</h2>
+            <p style="text-align: center; color: #6b7280; margin: 0 0 25px;">Order #{$orderNumber}</p>
+            
+            <p>Hi {$firstName},</p>
+            <p>Your order has been successfully delivered. We hope you love your purchase!</p>
+            
+            <div style="background: #ecfdf5; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
+                <p style="margin: 0; font-size: 16px; color: #065f46;">Thank you for shopping with us! ❤️</p>
+            </div>
+            
+            <p>If you have any questions or concerns about your order, please don't hesitate to contact us.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{$shopUrl}" style="display: inline-block; padding: 14px 35px; background: #0a0a0a; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Shop Again</a>
+            </div>
+        </div>
+        <div style="padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p style="margin: 0 0 5px;">&copy; {$appName}. All rights reserved.</p>
+            <p style="margin: 0;">This is an automated message, please do not reply.</p>
         </div>
     </div>
 </body>

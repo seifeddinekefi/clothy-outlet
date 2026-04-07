@@ -87,6 +87,14 @@ class AuthController extends Controller
             $this->redirect(url('register'));
         }
 
+        // ── Send welcome email ────────────────────────────
+        try {
+            $mailer = new Mailer();
+            $mailer->sendWelcome($email, $firstName . ' ' . $lastName);
+        } catch (Exception $e) {
+            error_log('Failed to send welcome email: ' . $e->getMessage());
+        }
+
         // ── Log the customer in ───────────────────────────
         Session::login([
             'id'    => (int) $customerId,
@@ -179,14 +187,14 @@ class AuthController extends Controller
         }
 
         $this->flash('success', 'Welcome back, ' . htmlspecialchars($customer->name) . '!');
-        
+
         // Check for redirect (e.g., returning from guest checkout)
         $redirect = Session::get('login_redirect');
         if ($redirect) {
             Session::delete('login_redirect');
             $this->redirect(url($redirect));
         }
-        
+
         $this->redirect(url('account'));
     }
 
