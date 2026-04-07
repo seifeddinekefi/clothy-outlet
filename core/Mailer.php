@@ -581,86 +581,165 @@ LOG;
     }
 
     /**
-     * Send via SMTP (basic implementation).
+     * Send via SMTP with proper TLS support for Gmail.
      */
     private function sendViaSMTP(string $to, string $subject, string $body, string $from, string $fromName): bool
     {
         $host = $this->config['host'];
-        $port = $this->config['port'];
+        $port = (int) $this->config['port'];
         $username = $this->config['username'];
         $password = $this->config['password'];
         $encryption = $this->config['encryption'];
 
-        // Use TLS prefix for encrypted connections
-        $protocol = ($encryption === 'ssl') ? 'ssl://' : '';
-        $hostname = $protocol . $host;
+        $debugLog = [];
+        $debugLog[] = "Attempting SMTP to {$host}:{$port}";
 
-        $socket = @fsockopen($hostname, $port, $errno, $errstr, 30);
+        try {
+            // For Gmail with TLS on port 587, connect without SSL first
+            $protocol = ($encryption === 'ssl' || $port === 465) ? 'ssl://' : '';
+            $hostname = $protocol . $host;
 
-        if (!$socket) {
-            error_log("SMTP connection failed: {$errstr} ({$errno})");
-            // Fallback to log driver
-            return $this->sendViaLog($to, $subject, $body, $from, $fromName);
+            $context = stream_context_create([
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true,
+                ]
+            ]);
+
+            $socket = @stream_socket_client(
+                "{$hostname}:{$port}",
+                $errno,
+                $errstr,
+                30,
+                STREAM_CLIENT_CONNECT,
+                $context
+            );
+
+            if (!$socket) {
+                $debugLog[] = "Connection failed: {$errstr} ({$errno})";
+                error_log("SMTP Error: " . implode(" | ", $debugLog));
+                return $this->sendViaLog($to, $subject, $body, $from, $fromName);
+            }
+
+            $debugLog[] = "Connected";
+
+            // Read greeting
+            $response = $this->smtpRead($socket);
+            $debugLog[] = "Greeting: " . trim($response);
+
+            if (!$this->smtpOk($response)) {
+                throw new Exception("Bad greeting: {$response}");
+            }
+
+            // EHLO
+            $this->smtpSend($socket, "EHLO localhost");
+            $response = $this->smtpRead($socket);
+            $debugLog[] = "EHLO response received";
+
+            // STARTTLS for TLS encryption (port 587)
+            if ($encryption === 'tls' && $port === 587) {
+                $this->smtpSend($socket, "STARTTLS");
+                $response = $this->smtpRead($socket);
+                $debugLog[] = "STARTTLS: " . trim($response);
+
+                if (!$this->smtpOk($response)) {
+                    throw new Exception("STARTTLS failed: {$response}");
+                }
+
+                // Enable TLS encryption
+                $crypto = stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT);
+                if (!$crypto) {
+                    throw new Exception("Failed to enable TLS encryption");
+                }
+                $debugLog[] = "TLS enabled";
+
+                // Re-send EHLO after TLS
+                $this->smtpSend($socket, "EHLO localhost");
+                $response = $this->smtpRead($socket);
+            }
+
+            // AUTH LOGIN
+            if ($username && $password) {
+                $this->smtpSend($socket, "AUTH LOGIN");
+                $response = $this->smtpRead($socket);
+                $debugLog[] = "AUTH LOGIN: " . trim($response);
+
+                $this->smtpSend($socket, base64_encode($username));
+                $response = $this->smtpRead($socket);
+                $debugLog[] = "Username sent";
+
+                $this->smtpSend($socket, base64_encode($password));
+                $response = $this->smtpRead($socket);
+                $debugLog[] = "Password response: " . trim($response);
+
+                if (!$this->smtpOk($response)) {
+                    throw new Exception("Authentication failed: {$response}");
+                }
+            }
+
+            // MAIL FROM
+            $this->smtpSend($socket, "MAIL FROM:<{$from}>");
+            $response = $this->smtpRead($socket);
+            if (!$this->smtpOk($response)) {
+                throw new Exception("MAIL FROM failed: {$response}");
+            }
+
+            // RCPT TO
+            $this->smtpSend($socket, "RCPT TO:<{$to}>");
+            $response = $this->smtpRead($socket);
+            if (!$this->smtpOk($response)) {
+                throw new Exception("RCPT TO failed: {$response}");
+            }
+
+            // DATA
+            $this->smtpSend($socket, "DATA");
+            $response = $this->smtpRead($socket);
+            if (substr(trim($response), 0, 3) !== '354') {
+                throw new Exception("DATA command failed: {$response}");
+            }
+
+            // Build email message
+            $message = "From: {$fromName} <{$from}>\r\n";
+            $message .= "To: {$to}\r\n";
+            $message .= "Subject: {$subject}\r\n";
+            $message .= "MIME-Version: 1.0\r\n";
+            $message .= "Content-Type: text/html; charset=UTF-8\r\n";
+            $message .= "Date: " . date('r') . "\r\n";
+            $message .= "Message-ID: <" . md5(uniqid()) . "@" . gethostname() . ">\r\n";
+            $message .= "\r\n";
+            $message .= $body;
+            $message .= "\r\n.\r\n";
+
+            fwrite($socket, $message);
+            $response = $this->smtpRead($socket);
+            $debugLog[] = "DATA response: " . trim($response);
+
+            if (!$this->smtpOk($response)) {
+                throw new Exception("Message send failed: {$response}");
+            }
+
+            // QUIT
+            $this->smtpSend($socket, "QUIT");
+            fclose($socket);
+
+            $debugLog[] = "Email sent successfully";
+            error_log("SMTP Success: " . implode(" | ", $debugLog));
+
+            return true;
+
+        } catch (Exception $e) {
+            $debugLog[] = "Error: " . $e->getMessage();
+            error_log("SMTP Error: " . implode(" | ", $debugLog));
+            
+            if (isset($socket) && is_resource($socket)) {
+                fclose($socket);
+            }
+
+            // Fallback to log driver and also log the error
+            $this->sendViaLog($to, $subject, $body, $from, $fromName);
+            return false;
         }
-
-        // Read greeting
-        $this->smtpRead($socket);
-
-        // EHLO
-        $this->smtpSend($socket, "EHLO " . gethostname());
-        $response = $this->smtpRead($socket);
-
-        // STARTTLS for TLS encryption
-        if ($encryption === 'tls' && strpos($response, 'STARTTLS') !== false) {
-            $this->smtpSend($socket, "STARTTLS");
-            $this->smtpRead($socket);
-
-            stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
-
-            $this->smtpSend($socket, "EHLO " . gethostname());
-            $this->smtpRead($socket);
-        }
-
-        // AUTH LOGIN
-        if ($username && $password) {
-            $this->smtpSend($socket, "AUTH LOGIN");
-            $this->smtpRead($socket);
-
-            $this->smtpSend($socket, base64_encode($username));
-            $this->smtpRead($socket);
-
-            $this->smtpSend($socket, base64_encode($password));
-            $this->smtpRead($socket);
-        }
-
-        // MAIL FROM
-        $this->smtpSend($socket, "MAIL FROM:<{$from}>");
-        $this->smtpRead($socket);
-
-        // RCPT TO
-        $this->smtpSend($socket, "RCPT TO:<{$to}>");
-        $this->smtpRead($socket);
-
-        // DATA
-        $this->smtpSend($socket, "DATA");
-        $this->smtpRead($socket);
-
-        // Email headers and body
-        $headers = "From: {$fromName} <{$from}>\r\n";
-        $headers .= "To: {$to}\r\n";
-        $headers .= "Subject: {$subject}\r\n";
-        $headers .= "MIME-Version: 1.0\r\n";
-        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-        $headers .= "\r\n";
-
-        $this->smtpSend($socket, $headers . $body . "\r\n.");
-        $this->smtpRead($socket);
-
-        // QUIT
-        $this->smtpSend($socket, "QUIT");
-        fclose($socket);
-
-        return true;
     }
 
     private function smtpSend($socket, string $command): void
@@ -671,12 +750,21 @@ LOG;
     private function smtpRead($socket): string
     {
         $response = '';
+        stream_set_timeout($socket, 30);
+        
         while ($line = fgets($socket, 515)) {
             $response .= $line;
-            if (substr($line, 3, 1) === ' ') {
+            // Check if this is the last line (no dash after status code)
+            if (isset($line[3]) && $line[3] !== '-') {
                 break;
             }
         }
         return $response;
+    }
+
+    private function smtpOk(string $response): bool
+    {
+        $code = (int) substr(trim($response), 0, 3);
+        return $code >= 200 && $code < 400;
     }
 }
