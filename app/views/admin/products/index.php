@@ -18,6 +18,7 @@
                         <th>Category</th>
                         <th>Price</th>
                         <th>Stock</th>
+                        <th>Badge</th>
                         <th>Featured</th>
                         <th>Active</th>
                         <th>Actions</th>
@@ -25,12 +26,20 @@
                 </thead>
                 <tbody>
                     <?php foreach ($products as $p): ?>
+                        <?php $_badgeMeta = productBadgeMeta($p); ?>
                         <tr>
                             <td><?= e($p->id) ?></td>
                             <td class="td-name"><?= e($p->name) ?></td>
                             <td><?= e($p->category_name) ?></td>
                             <td><?= formatPrice($p->price) ?></td>
                             <td><?= e($p->stock) ?></td>
+                            <td>
+                                <?php if (!empty($_badgeMeta['show'])): ?>
+                                    <span class="badge <?= e($_badgeMeta['class']) ?>"><?= e($_badgeMeta['label']) ?></span>
+                                <?php else: ?>
+                                    <span class="badge badge--muted">None</span>
+                                <?php endif; ?>
+                            </td>
                             <td><?= $p->is_featured ? '<span class="badge badge--success">Yes</span>' : '<span class="badge badge--muted">No</span>' ?></td>
                             <td><?= $p->is_active  ? '<span class="badge badge--success">Yes</span>' : '<span class="badge badge--danger">No</span>'  ?></td>
                             <td class="td-actions">

@@ -1025,6 +1025,26 @@ $view->setLayout('');
             color: var(--clr-white);
         }
 
+        .badge-hot {
+            background: #ef7f1a;
+            color: var(--clr-white);
+        }
+
+        .badge-limited {
+            background: #2a4267;
+            color: var(--clr-white);
+        }
+
+        .badge-bestseller {
+            background: #3d7f5d;
+            color: var(--clr-white);
+        }
+
+        .badge-custom {
+            background: #4b5563;
+            color: var(--clr-white);
+        }
+
         .product-card-actions {
             position: absolute;
             bottom: -100%;
@@ -2308,8 +2328,8 @@ $view->setLayout('');
                 foreach ($_featList as $p):
                     $s       = 's' . min($stagger, 8);
                     $_price  = formatPrice($p->price);
-                    $_orig   = $p->compare_price ? formatPrice($p->compare_price) : '';
-                    $_badge  = $p->compare_price ? 'sale' : ($p->is_featured ? 'new' : '');
+                    $_badgeMeta = productBadgeMeta($p);
+                    $_orig   = ((int) ($_badgeMeta['sale_percent'] ?? 0) > 0) ? formatPrice($p->compare_price) : '';
                     $_catId  = (int) ($p->category_id ?? 0);
                     $_imgSrc  = productImg($p->primary_image ?? null);
                 ?>
@@ -2329,8 +2349,8 @@ $view->setLayout('');
                                 width="300" height="400"
                                 loading="<?= $stagger <= 4 ? 'eager' : 'lazy' ?>"
                                 decoding="async">
-                            <?php if ($_badge): ?>
-                                <span class="product-badge badge-<?= $_badge ?>"><?= ucfirst($_badge) ?></span>
+                            <?php if (!empty($_badgeMeta['show'])): ?>
+                                <span class="product-badge <?= e($_badgeMeta['class']) ?>"><?= e($_badgeMeta['label']) ?></span>
                             <?php endif; ?>
                             <div class="product-card-actions">
                                 <button type="button" class="btn btn--primary btn--sm"
@@ -2470,8 +2490,8 @@ $view->setLayout('');
                         foreach ($_shopList as $p):
                             $s       = 's' . min($_si, 8);
                             $_price  = formatPrice($p->price);
-                            $_orig   = $p->compare_price ? formatPrice($p->compare_price) : '';
-                            $_badge  = $p->compare_price ? 'sale' : ($p->is_featured ? 'new' : '');
+                            $_badgeMeta = productBadgeMeta($p);
+                            $_orig   = ((int) ($_badgeMeta['sale_percent'] ?? 0) > 0) ? formatPrice($p->compare_price) : '';
                             $_imgSrc  = productImg($p->primary_image ?? null);
                             $_hidden = $_si > $_productsPerPage ? 'style="display:none;" data-hidden="true"' : '';
                         ?>
@@ -2495,8 +2515,8 @@ $view->setLayout('');
                                         width="300" height="400"
                                         loading="lazy"
                                         decoding="async">
-                                    <?php if ($_badge): ?>
-                                        <span class="product-badge badge-<?= $_badge ?>"><?= ucfirst($_badge) ?></span>
+                                    <?php if (!empty($_badgeMeta['show'])): ?>
+                                        <span class="product-badge <?= e($_badgeMeta['class']) ?>"><?= e($_badgeMeta['label']) ?></span>
                                     <?php endif; ?>
                                     <div class="product-card-actions">
                                         <button type="button" class="btn btn--primary btn--sm"

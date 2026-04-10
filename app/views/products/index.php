@@ -163,7 +163,29 @@ $_maxPrice  = (string) ($_filters['max_price'] ?? '');
     aspect-ratio: 3/4;
     display: block;
     background: #f4f3f1;
+    position: relative;
   }
+
+  .p-badge {
+    position: absolute;
+    top: .6rem;
+    left: .6rem;
+    z-index: 2;
+    padding: .25rem .55rem;
+    border-radius: 999px;
+    color: #fff;
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+
+  .p-badge.badge-sale { background: #c23a3a; }
+  .p-badge.badge-new { background: #0a0a0a; }
+  .p-badge.badge-hot { background: #ef7f1a; }
+  .p-badge.badge-limited { background: #2a4267; }
+  .p-badge.badge-bestseller { background: #3d7f5d; }
+  .p-badge.badge-custom { background: #4b5563; }
 
   .p-image img {
     width: 100%;
@@ -188,6 +210,17 @@ $_maxPrice  = (string) ($_filters['max_price'] ?? '');
     font-size: .95rem;
     font-weight: 700;
     margin-bottom: .6rem;
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+    flex-wrap: wrap;
+  }
+
+  .p-price-old {
+    font-size: .8rem;
+    font-weight: 500;
+    color: #918b85;
+    text-decoration: line-through;
   }
 
   .p-actions {
@@ -332,14 +365,23 @@ $_maxPrice  = (string) ($_filters['max_price'] ?? '');
           <div class="products-grid">
             <?php foreach ($_products as $p):
               $inWish = in_array((int) $p->id, $_wishlistIds, true);
+              $_badgeMeta = productBadgeMeta($p);
             ?>
               <article class="p-card">
                 <a class="p-image" href="<?= url('product/' . (int) $p->id) ?>">
                   <img src="<?= productImg($p->primary_image ?? null) ?>" alt="<?= e($p->name) ?>" loading="lazy">
+                  <?php if (!empty($_badgeMeta['show'])): ?>
+                    <span class="p-badge <?= e($_badgeMeta['class']) ?>"><?= e($_badgeMeta['label']) ?></span>
+                  <?php endif; ?>
                 </a>
                 <div class="p-body">
                   <a class="p-name" href="<?= url('product/' . (int) $p->id) ?>"><?= e($p->name) ?></a>
-                  <div class="p-price"><?= formatPrice($p->price) ?></div>
+                  <div class="p-price">
+                    <span><?= formatPrice($p->price) ?></span>
+                    <?php if ((int) ($_badgeMeta['sale_percent'] ?? 0) > 0): ?>
+                      <span class="p-price-old"><?= formatPrice($p->compare_price) ?></span>
+                    <?php endif; ?>
+                  </div>
 
                   <div class="p-actions">
                     <a href="<?= url('product/' . (int) $p->id) ?>" class="btn-p cart" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">Add to Cart</a>

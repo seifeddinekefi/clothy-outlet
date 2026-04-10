@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS `products` (
     `sku`         VARCHAR(80)          NULL     UNIQUE COMMENT 'Stock Keeping Unit',
     `category_id` SMALLINT UNSIGNED    NOT NULL,
     `is_featured` TINYINT(1)           NOT NULL DEFAULT 0,
+    `badge_type`  VARCHAR(20)          NOT NULL DEFAULT 'auto' COMMENT 'auto|none|new|hot|limited|bestseller',
+    `badge_text`  VARCHAR(40)          NULL     COMMENT 'Optional custom badge label',
     `is_active`   TINYINT(1)           NOT NULL DEFAULT 1,
     `meta_title`  VARCHAR(160)         NULL     COMMENT 'SEO title',
     `meta_desc`   VARCHAR(320)         NULL     COMMENT 'SEO description',

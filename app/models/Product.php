@@ -309,6 +309,8 @@ class Product extends Model
             'sku'           => $data['sku']            ?? null,
             'category_id'   => $data['category_id'],
             'is_featured'   => $data['is_featured']    ?? 0,
+            'badge_type'    => $data['badge_type']     ?? 'auto',
+            'badge_text'    => $data['badge_text']     ?? null,
             'is_active'     => $data['is_active']      ?? 1,
             'meta_title'    => $data['meta_title']     ?? null,
             'meta_desc'     => $data['meta_desc']      ?? null,

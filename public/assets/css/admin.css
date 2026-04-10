@@ -858,6 +858,30 @@ body {
   background: #ede9fe;
   color: #4c1d95;
 }
+.badge-sale {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.badge-new {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+.badge-hot {
+  background: #ffedd5;
+  color: #9a3412;
+}
+.badge-limited {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+.badge-bestseller {
+  background: #dcfce7;
+  color: #166534;
+}
+.badge-custom {
+  background: #f3f4f6;
+  color: #374151;
+}
 
 /* ── Buttons ────────────────────────────────────────────────── */
 .btn {

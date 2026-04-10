@@ -6,8 +6,14 @@
 $_p = $product ?? null;
 $_sizes = $sizes ?? [];
 $_inWishlist = (bool) ($inWishlist ?? false);
-$_hasComparePrice = isset($_p->compare_price) && $_p->compare_price > $_p->price;
-$_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 100) : 0;
+$_hasComparePrice = is_object($_p)
+  && isset($_p->compare_price)
+  && (float) $_p->compare_price > (float) ($_p->price ?? 0);
+$_badgeMeta = productBadgeMeta($_p);
+$_discount = (int) ($_badgeMeta['sale_percent'] ?? 0);
+if ($_discount <= 0 && $_hasComparePrice && is_object($_p)) {
+  $_discount = (int) round((1 - $_p->price / $_p->compare_price) * 100);
+}
 ?>
 
 <?php if (!$_p): ?>
@@ -98,7 +104,11 @@ $_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 1
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
-  .pd-badge.sale { background: #c23a3a; }
+  .pd-badge.badge-sale { background: #c23a3a; }
+  .pd-badge.badge-hot { background: #ef7f1a; }
+  .pd-badge.badge-limited { background: #2a4267; }
+  .pd-badge.badge-bestseller { background: #3d7f5d; }
+  .pd-badge.badge-custom { background: #4b5563; }
 
   /* Product Info */
   .pd-info {
@@ -246,6 +256,7 @@ $_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 1
     text-align: center;
     font-size: 1rem;
     font-weight: 600;
+    appearance: textfield;
     -moz-appearance: textfield;
   }
   .pd-qty-input::-webkit-outer-spin-button,
@@ -434,10 +445,8 @@ $_discount = $_hasComparePrice ? round((1 - $_p->price / $_p->compare_price) * 1
       <div class="pd-gallery">
         <div class="pd-img-main">
           <img src="<?= productImg($_p->primary_image ?? null) ?>" alt="<?= e($_p->name) ?>">
-          <?php if ($_hasComparePrice): ?>
-            <span class="pd-badge sale">-<?= $_discount ?>%</span>
-          <?php elseif (!empty($_p->is_featured)): ?>
-            <span class="pd-badge">New</span>
+          <?php if (!empty($_badgeMeta['show'])): ?>
+            <span class="pd-badge <?= e($_badgeMeta['class']) ?>"><?= e($_badgeMeta['label']) ?></span>
           <?php endif; ?>
         </div>
       </div>

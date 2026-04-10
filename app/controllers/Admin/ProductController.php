@@ -198,6 +198,19 @@ class ProductController extends BaseAdminController
         $catId      = (int) ($_POST['category_id']  ?? 0);
         $featured   = isset($_POST['is_featured']) ? 1 : 0;
         $active     = isset($_POST['is_active'])   ? 1 : 0;
+        $onSale     = isset($_POST['on_sale']);
+        $salePctRaw = trim((string) ($_POST['sale_percent'] ?? ''));
+
+        $badgeTypeRaw = strtolower(trim((string) ($_POST['badge_type'] ?? 'auto')));
+        $allowedBadgeTypes = ['auto', 'none', 'new', 'hot', 'limited', 'bestseller'];
+        $badgeType = in_array($badgeTypeRaw, $allowedBadgeTypes, true) ? $badgeTypeRaw : 'auto';
+
+        $badgeText = trim(strip_tags((string) ($_POST['badge_text'] ?? '')));
+        if ($badgeText !== '') {
+            $badgeText = mb_substr($badgeText, 0, 40);
+        } else {
+            $badgeText = null;
+        }
 
         if ($name === '') {
             return [[], 'Product name is required.'];
@@ -213,6 +226,34 @@ class ProductController extends BaseAdminController
             : null;
         if ($compare !== null && $compare === false) {
             return [[], 'Compare price must be a valid number.'];
+        }
+
+        if ($compare !== null && $compare < 0) {
+            return [[], 'Compare price cannot be negative.'];
+        }
+
+        if ($salePctRaw !== '') {
+            $salePct = filter_var($salePctRaw, FILTER_VALIDATE_INT);
+            if ($salePct === false || $salePct < 1 || $salePct > 95) {
+                return [[], 'Sale percentage must be an integer between 1 and 95.'];
+            }
+        } else {
+            $salePct = null;
+        }
+
+        $hasSaleByCompare = $compare !== null && $compare > $price;
+        $onSale = $onSale || $hasSaleByCompare;
+
+        if ($onSale) {
+            if ($salePct !== null) {
+                $compare = round($price / (1 - ($salePct / 100)), 2);
+            }
+
+            if ($compare === null || $compare <= $price) {
+                return [[], 'For sale products, set a sale percentage or a compare price greater than the current price.'];
+            }
+        } else {
+            $compare = null;
         }
 
         $stock = max(0, (int) $stockRaw);
@@ -241,6 +282,8 @@ class ProductController extends BaseAdminController
             'sku'           => $sku,
             'category_id'   => $catId,
             'is_featured'   => $featured,
+            'badge_type'    => $badgeType,
+            'badge_text'    => $badgeText,
             'is_active'     => $active,
         ], null];
     }

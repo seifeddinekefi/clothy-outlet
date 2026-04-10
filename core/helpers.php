@@ -180,6 +180,96 @@ function formatPrice($amount, int $decimals = 2): string
 }
 
 /**
+ * Read a field from an array/object product record.
+ */
+function productField(array|object|null $product, string $field, mixed $default = null): mixed
+{
+    if (is_array($product)) {
+        return $product[$field] ?? $default;
+    }
+    if (is_object($product)) {
+        return $product->{$field} ?? $default;
+    }
+    return $default;
+}
+
+/**
+ * Resolve badge metadata for a product card.
+ * Sale badges always take priority over all other badge types.
+ *
+ * @return array{show: bool, label: string, class: string, type: string, sale_percent: int}
+ */
+function productBadgeMeta(array|object|null $product): array
+{
+    $price = (float) productField($product, 'price', 0);
+    $compareRaw = productField($product, 'compare_price');
+    $compare = is_numeric($compareRaw) ? (float) $compareRaw : 0;
+
+    $salePercent = 0;
+    if ($price > 0 && $compare > $price) {
+        $salePercent = (int) round((1 - ($price / $compare)) * 100);
+        $salePercent = max(1, $salePercent);
+    }
+
+    if ($salePercent > 0) {
+        return [
+            'show' => true,
+            'label' => '-' . $salePercent . '%',
+            'class' => 'badge-sale',
+            'type' => 'sale',
+            'sale_percent' => $salePercent,
+        ];
+    }
+
+    $badgeType = strtolower(trim((string) productField($product, 'badge_type', 'auto')));
+    if ($badgeType === '') {
+        $badgeType = 'auto';
+    }
+
+    $badgeText = trim((string) productField($product, 'badge_text', ''));
+
+    if ($badgeType === 'auto') {
+        $badgeType = ((int) productField($product, 'is_featured', 0) === 1) ? 'new' : 'none';
+    }
+
+    if ($badgeText !== '') {
+        $classMap = [
+            'new' => 'badge-new',
+            'hot' => 'badge-hot',
+            'limited' => 'badge-limited',
+            'bestseller' => 'badge-bestseller',
+            'none' => 'badge-custom',
+        ];
+
+        return [
+            'show' => true,
+            'label' => $badgeText,
+            'class' => $classMap[$badgeType] ?? 'badge-custom',
+            'type' => 'custom',
+            'sale_percent' => 0,
+        ];
+    }
+
+    $badgeMap = [
+        'none' => [false, '', ''],
+        'new' => [true, 'New', 'badge-new'],
+        'hot' => [true, 'Hot', 'badge-hot'],
+        'limited' => [true, 'Limited', 'badge-limited'],
+        'bestseller' => [true, 'Bestseller', 'badge-bestseller'],
+    ];
+
+    [$show, $label, $class] = $badgeMap[$badgeType] ?? [false, '', ''];
+
+    return [
+        'show' => $show,
+        'label' => $label,
+        'class' => $class,
+        'type' => $badgeType,
+        'sale_percent' => 0,
+    ];
+}
+
+/**
  * Return a public URL for a product image stored in the DB (primary_image column).
  * Falls back to the placeholder if the file doesn't exist on disk yet.
  *

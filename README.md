@@ -144,6 +144,12 @@ For existing databases, run the guest checkout migration:
 mysql -u root -p clothy_outlet < database/migrate_guest_checkout.sql
 ```
 
+Then run the product badge migration:
+
+```bash
+mysql -u root -p clothy_outlet < database/migrate_product_badges.sql
+```
+
 Optional sample data:
 
 ```bash
@@ -157,8 +163,8 @@ mysql -u root -p clothy_outlet < database/seed.sql
 
 Default local URLs:
 
-- Storefront: http://localhost/clothy/public
-- Admin: http://localhost/clothy/public/admin
+- Storefront: <http://localhost/clothy/public>
+- Admin: <http://localhost/clothy/public/admin>
 
 ## Usage Guide
 
