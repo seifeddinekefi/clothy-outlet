@@ -571,6 +571,7 @@ $view->setLayout('');
             opacity: 0;
             pointer-events: none;
             transition: opacity var(--transition);
+            padding: 5rem var(--container-pad) 3rem;
         }
 
         .nav-mobile-menu.open {
@@ -578,7 +579,7 @@ $view->setLayout('');
             pointer-events: auto;
         }
 
-        .nav-mobile-menu a {
+        .nav-mobile-menu > a {
             font-family: var(--ff-heading);
             font-size: clamp(var(--fz-xl), 5vw, var(--fz-3xl));
             color: var(--clr-white);
@@ -586,7 +587,7 @@ $view->setLayout('');
             transition: color var(--transition-fast);
         }
 
-        .nav-mobile-menu a:hover {
+        .nav-mobile-menu > a:hover {
             color: var(--clr-beige);
         }
 
@@ -603,6 +604,63 @@ $view->setLayout('');
         }
 
         .nav-mobile-close:hover {
+            color: var(--clr-white);
+        }
+
+        .nav-mobile-divider {
+            width: 40px;
+            height: 1px;
+            background: rgba(255,255,255,.12);
+        }
+
+        .nav-mobile-auth {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .9rem;
+            width: 100%;
+            max-width: 240px;
+        }
+
+        .nav-mobile-auth a {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: .7rem 1.5rem;
+            font-size: var(--fz-xs);
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .nav-mobile-auth-outline {
+            color: rgba(255,255,255,.75);
+            border: 1px solid rgba(255,255,255,.25);
+        }
+
+        .nav-mobile-auth-outline:hover {
+            color: var(--clr-white);
+            border-color: var(--clr-white);
+        }
+
+        .nav-mobile-auth-solid {
+            background: var(--clr-white);
+            color: var(--clr-black);
+        }
+
+        .nav-mobile-auth-solid:hover {
+            background: var(--clr-beige);
+        }
+
+        .nav-mobile-auth-ghost {
+            color: rgba(255,255,255,.55);
+            font-size: calc(var(--fz-xs) + 1px);
+            letter-spacing: .1em;
+        }
+
+        .nav-mobile-auth-ghost:hover {
             color: var(--clr-white);
         }
 
@@ -681,7 +739,7 @@ $view->setLayout('');
             justify-content: center;
             padding: calc(var(--nav-height) + 3rem) var(--container-pad) 10rem;
             padding-left: max(var(--container-pad), calc((100vw - var(--container-max)) / 2 + var(--container-pad)));
-            max-width: min(700px, 58vw);
+            max-width: min(700px, 65vw);
         }
 
         .hero-tag {
@@ -2087,9 +2145,54 @@ $view->setLayout('');
                 display: flex;
             }
 
+            /* Tighter section padding on mobile */
+            .section {
+                padding: 2.5rem 0;
+            }
+
+            .features-strip {
+                padding: 1.75rem 0;
+            }
+
+            /* Hero: full-width content, lighter bottom padding */
+            .hero-content {
+                max-width: 100%;
+                padding-left: var(--container-pad);
+                padding-right: var(--container-pad);
+                padding-bottom: 7rem;
+            }
+
+            /* Hide decorative elements that crowd mobile */
+            .hero-scroll {
+                display: none;
+            }
+
+            .hero-counter {
+                display: none;
+            }
+
+            /* Compact stats bar on mobile */
+            .hero-stats {
+                font-size: .78rem;
+            }
+
+            .hero-stat {
+                padding: .65rem .5rem;
+            }
+
+            .hero-stat-num {
+                font-size: 1.25rem;
+            }
+
+            /* Dots closer to content */
+            .hero-dots {
+                bottom: 3.25rem;
+                left: var(--container-pad);
+            }
+
             .products-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
+                gap: .85rem;
             }
 
             .editorial-strip-heading {
@@ -2099,19 +2202,69 @@ $view->setLayout('');
             .section-hdr-row {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 1rem;
+                gap: .75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .editorial-strip {
+                padding: 3rem var(--container-pad);
+            }
+
+            .newsletter {
+                padding: 2.5rem 0;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+                border-radius: var(--radius-md);
+                overflow: visible;
+                border: none;
+                gap: .6rem;
+            }
+
+            .newsletter-form input {
+                border: 1px solid rgba(255,255,255,.14);
+                border-radius: var(--radius-full);
+                padding: .8rem 1.25rem;
+            }
+
+            .newsletter-form button {
+                border-radius: var(--radius-full);
+                padding: .8rem 1.5rem;
+                width: 100%;
             }
         }
 
         @media (max-width: 480px) {
+            .hero-title {
+                font-size: clamp(2rem, 9vw, 2.6rem);
+            }
+
+            .hero-sub {
+                font-size: .92rem;
+            }
+
             .hero-actions {
                 flex-direction: column;
-                flex-wrap: wrap;
+                width: 100%;
             }
 
             .hero-actions .btn {
                 width: 100%;
                 justify-content: center;
+            }
+
+            /* Stats bar: hide on very small, content is king */
+            .hero-stats {
+                display: none;
+            }
+
+            .hero-dots {
+                bottom: 1.5rem;
+            }
+
+            .hero-content {
+                padding-bottom: 4rem;
             }
 
             .footer-grid {
@@ -2130,12 +2283,21 @@ $view->setLayout('');
                 gap: 1.25rem;
             }
 
+            /* 2x2 grid keeps cards a readable size */
             .features-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: .75rem;
             }
 
             .feature-item {
-                min-height: 145px;
+                min-height: 130px;
+                padding: .9rem .7rem;
+            }
+
+            .feature-icon {
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -2148,9 +2310,19 @@ $view->setLayout('');
        ══════════════════════════════════════════════════════════ -->
     <div class="nav-mobile-menu" id="mobileMenu" role="dialog" aria-label="Mobile navigation">
         <button class="nav-mobile-close" id="mobileClose" aria-label="Close menu">✕</button>
-        <a href="<?= url() ?>">Home</a>
-        <a href="<?= url('products') ?>">Shop</a>
-        <a href="#featured">New Arrivals</a>
+        <a href="<?= url() ?>" onclick="closeMobileMenu()">Home</a>
+        <a href="<?= url('products') ?>" onclick="closeMobileMenu()">Shop</a>
+        <a href="#featured" onclick="closeMobileMenu()">New Arrivals</a>
+        <div class="nav-mobile-divider"></div>
+        <div class="nav-mobile-auth">
+            <?php if (class_exists('Session') && Session::isLoggedIn()): ?>
+                <a href="<?= url('account') ?>" class="nav-mobile-auth-ghost" onclick="closeMobileMenu()">My Account</a>
+                <a href="<?= url('logout') ?>" class="nav-mobile-auth-outline" onclick="closeMobileMenu()">Logout</a>
+            <?php else: ?>
+                <a href="<?= url('login') ?>" class="nav-mobile-auth-outline" onclick="closeMobileMenu()">Login</a>
+                <a href="<?= url('register') ?>" class="nav-mobile-auth-solid" onclick="closeMobileMenu()">Create Account</a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════

@@ -1,72 +1,89 @@
 <!-- app/views/partials/navbar.php -->
 <style>
+:root {
+  --nav-height: 68px;
+  --container-max: 1280px;
+  --container-pad: clamp(1rem, 4vw, 2rem);
+}
+
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 500;
   background: #fff;
   border-bottom: 1px solid #e8e6e2;
   box-shadow: 0 1px 4px rgba(0,0,0,.05);
 }
+
 .navbar {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  max-width: var(--container-max, 1280px);
+  gap: 1.5rem;
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--container-pad, 1.5rem);
-  height: var(--nav-height, 72px);
+  padding: 0 var(--container-pad);
+  height: var(--nav-height);
 }
+
 .navbar-brand {
-  font-family: Georgia, serif;
-  font-size: 1.2rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.18rem;
   font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
   color: #0a0a0a;
   text-decoration: none;
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ── Desktop nav links ── */
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 1.5rem;
+  gap: 1.75rem;
   flex-shrink: 0;
 }
+
 .nav-links a {
-  font-size: .83rem;
+  font-size: .75rem;
   font-weight: 600;
-  letter-spacing: .06em;
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: #3a3730;
   text-decoration: none;
   transition: color .2s;
 }
+
 .nav-links a:hover { color: #c4a97a; }
 
 /* ── Search ── */
 .nav-search {
   flex: 1;
   position: relative;
-  max-width: 420px;
+  max-width: 400px;
   margin: 0 auto;
 }
+
 .nav-search-input {
   width: 100%;
-  height: 38px;
+  height: 36px;
   border: 1.5px solid #e0deda;
-  border-radius: 20px;
-  padding: 0 1rem 0 2.4rem;
-  font-size: .85rem;
+  border-radius: 18px;
+  padding: 0 1rem 0 2.3rem;
+  font-size: .82rem;
   background: #fafaf9;
   color: #0a0a0a;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
 }
+
 .nav-search-input:focus {
   border-color: #c4a97a;
   box-shadow: 0 0 0 3px rgba(196,169,122,.12);
   background: #fff;
 }
+
 .nav-search-icon {
   position: absolute;
   left: .75rem;
@@ -76,7 +93,7 @@
   pointer-events: none;
 }
 
-/* ── Autocomplete dropdown ── */
+/* ── Autocomplete ── */
 .nav-ac-dropdown {
   position: absolute;
   top: calc(100% + 6px);
@@ -90,7 +107,9 @@
   z-index: 9999;
   display: none;
 }
+
 .nav-ac-dropdown.open { display: block; }
+
 .nav-ac-item {
   display: flex;
   align-items: center;
@@ -99,20 +118,20 @@
   text-decoration: none;
   color: #0a0a0a;
   transition: background .15s;
-  cursor: pointer;
 }
+
 .nav-ac-item:hover, .nav-ac-item.highlighted { background: #faf9f7; }
+
 .nav-ac-img {
-  width: 40px;
-  height: 40px;
+  width: 38px; height: 38px;
   border-radius: 6px;
   object-fit: cover;
   background: #f0ede8;
   flex-shrink: 0;
 }
+
 .nav-ac-img-placeholder {
-  width: 40px;
-  height: 40px;
+  width: 38px; height: 38px;
   border-radius: 6px;
   background: #f0ede8;
   flex-shrink: 0;
@@ -121,145 +140,268 @@
   justify-content: center;
   color: #ccc;
 }
+
 .nav-ac-name {
-  font-size: .85rem;
+  font-size: .83rem;
   font-weight: 600;
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.nav-ac-price {
-  font-size: .8rem;
-  color: #7a7570;
-  flex-shrink: 0;
-}
+
+.nav-ac-price { font-size: .78rem; color: #7a7570; flex-shrink: 0; }
+
 .nav-ac-footer {
-  padding: .55rem 1rem;
-  font-size: .78rem;
+  padding: .5rem 1rem;
+  font-size: .75rem;
   color: #c4a97a;
   text-align: center;
   border-top: 1px solid #f0ede8;
   cursor: pointer;
 }
-.nav-ac-footer:hover { background: #faf9f7; }
-.nav-ac-empty {
-  padding: 1rem;
-  text-align: center;
-  font-size: .83rem;
-  color: #aaa;
-}
 
-/* ── Nav actions ── */
+.nav-ac-footer:hover { background: #faf9f7; }
+.nav-ac-empty { padding: 1rem; text-align: center; font-size: .82rem; color: #aaa; }
+
+/* ── Desktop auth actions ── */
 .nav-actions {
   display: flex;
   align-items: center;
   gap: .75rem;
   flex-shrink: 0;
-  font-size: .83rem;
 }
-.nav-actions a {
-  color: #3a3730;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color .2s;
-}
-.nav-actions a:hover { color: #c4a97a; }
-.btn-cart {
-  font-size: 1.1rem;
-  text-decoration: none;
-}
-.btn { border-radius: 20px; padding: .38rem .9rem; font-size: .8rem; font-weight: 600; text-decoration: none; transition: all .2s; display: inline-block; }
-.btn-outline { border: 1.5px solid #0a0a0a; color: #0a0a0a; }
-.btn-outline:hover { background: #0a0a0a; color: #fff; }
-.btn-primary { background: #0a0a0a; color: #fff; border: 1.5px solid #0a0a0a; }
-.btn-primary:hover { background: #2a2a2a; border-color: #2a2a2a; }
 
-/* ── Hamburger button (mobile only) ── */
-.nav-hamburger {
-  display: none;
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: .25rem;
-  color: #0a0a0a;
-  line-height: 1;
-}
-.nav-hamburger svg { display: block; }
-
-/* ── Mobile menu drawer ── */
-.mobile-menu {
-  display: none;
-  flex-direction: column;
-  background: #fff;
-  border-top: 1px solid #e8e6e2;
-  padding: 1rem var(--container-pad, 1.5rem) 1.25rem;
-}
-.mobile-menu.open { display: flex; }
-
-.mobile-search {
-  position: relative;
-  margin-bottom: .85rem;
-}
-.mobile-search .nav-search-input {
-  max-width: none;
-}
-.mobile-search .nav-search-icon {
-  left: .75rem;
-}
-.mobile-menu-links {
-  list-style: none;
-  margin: 0 0 .75rem;
-  padding: 0;
+.nav-cart-btn {
   display: flex;
-  flex-direction: column;
-  gap: .1rem;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  color: #0a0a0a;
+  text-decoration: none;
+  transition: color .2s, transform .15s;
+  flex-shrink: 0;
 }
-.mobile-menu-links a {
-  display: block;
-  padding: .55rem 0;
-  font-size: .88rem;
-  font-weight: 600;
-  letter-spacing: .05em;
+
+.nav-cart-btn:hover { color: #c4a97a; transform: scale(1.1); }
+
+.nav-actions a.nav-link-plain {
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: #3a3730;
   text-decoration: none;
-  border-bottom: 1px solid #f3f1ee;
   transition: color .2s;
 }
-.mobile-menu-links a:hover { color: #c4a97a; }
-.mobile-menu-actions {
-  display: flex;
-  gap: .6rem;
-  flex-wrap: wrap;
-  padding-top: .35rem;
+
+.nav-actions a.nav-link-plain:hover { color: #c4a97a; }
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: .38rem 1rem;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all .2s;
+  white-space: nowrap;
 }
-.mobile-menu-actions .btn { flex: 1; text-align: center; min-width: 90px; }
-.mobile-menu-actions a:not(.btn) {
+
+.nav-btn-outline {
+  border: 1.5px solid #0a0a0a;
+  color: #0a0a0a;
+  background: transparent;
+}
+
+.nav-btn-outline:hover { background: #0a0a0a; color: #fff; }
+
+.nav-btn-solid {
+  background: #0a0a0a;
+  color: #fff;
+  border: 1.5px solid #0a0a0a;
+}
+
+.nav-btn-solid:hover { background: #2a2a2a; border-color: #2a2a2a; }
+
+/* ── Hamburger (mobile only) ── */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .2rem;
+  color: #0a0a0a;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 30px;
+  height: 30px;
+}
+
+.nav-hamburger span {
   display: block;
   width: 100%;
-  padding: .55rem 0;
-  font-size: .88rem;
-  font-weight: 500;
-  color: #3a3730;
+  height: 1.5px;
+  background: currentColor;
+  transform-origin: center;
+  transition: transform .3s ease, opacity .3s ease;
+}
+
+.nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* ── Full-screen mobile overlay ── */
+.nav-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 499;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+  padding: 5rem 2rem 3rem;
+}
+
+.nav-mobile-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-mobile-overlay > a {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  color: rgba(255,255,255,.88);
+  letter-spacing: .04em;
   text-decoration: none;
-  border-bottom: 1px solid #f3f1ee;
   transition: color .2s;
 }
-.mobile-menu-actions a:not(.btn):hover { color: #c4a97a; }
 
-/* ── Mobile ac dropdown fix ── */
-.mobile-search .nav-ac-dropdown { z-index: 10000; }
+.nav-mobile-overlay > a:hover { color: #f5f0e8; }
+
+.nav-mobile-overlay .mob-search {
+  width: 100%;
+  max-width: 320px;
+  position: relative;
+}
+
+.nav-mobile-overlay .mob-search-input {
+  width: 100%;
+  height: 42px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 21px;
+  padding: 0 1rem 0 2.4rem;
+  font-size: .85rem;
+  color: #fff;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.nav-mobile-overlay .mob-search-input::placeholder { color: rgba(255,255,255,.35); }
+.nav-mobile-overlay .mob-search-input:focus { border-color: rgba(196,169,122,.6); }
+
+.nav-mobile-overlay .mob-search-icon {
+  position: absolute;
+  left: .8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,.35);
+  pointer-events: none;
+}
+
+.nav-mobile-overlay .mob-ac-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 9999;
+  display: none;
+}
+
+.nav-mobile-overlay .mob-ac-dropdown.open { display: block; }
+.nav-mobile-overlay .mob-ac-dropdown .nav-ac-item { color: #fff; }
+.nav-mobile-overlay .mob-ac-dropdown .nav-ac-item:hover { background: rgba(255,255,255,.07); }
+.nav-mobile-overlay .mob-ac-dropdown .nav-ac-price { color: #c4a97a; }
+.nav-mobile-overlay .mob-ac-dropdown .nav-ac-footer { color: #c4a97a; border-color: rgba(255,255,255,.08); }
+.nav-mobile-overlay .mob-ac-dropdown .nav-ac-footer:hover { background: rgba(255,255,255,.05); }
+.nav-mobile-overlay .mob-ac-dropdown .nav-ac-empty { color: rgba(255,255,255,.4); }
+
+.mob-divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(255,255,255,.1);
+}
+
+.nav-mobile-auth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .8rem;
+  width: 100%;
+  max-width: 240px;
+}
+
+.nav-mobile-auth a {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: .65rem 1.5rem;
+  font-size: .72rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all .2s;
+}
+
+.mob-auth-outline {
+  color: rgba(255,255,255,.7);
+  border: 1px solid rgba(255,255,255,.22);
+}
+
+.mob-auth-outline:hover { color: #fff; border-color: #fff; }
+
+.mob-auth-solid { background: #fff; color: #0a0a0a; }
+.mob-auth-solid:hover { background: #f5f0e8; }
+
+.mob-auth-ghost {
+  color: rgba(255,255,255,.45);
+  font-size: .7rem;
+  letter-spacing: .1em;
+}
+
+.mob-auth-ghost:hover { color: rgba(255,255,255,.75); }
+
+/* Mobile group hidden on desktop */
+.nav-mobile-group {
+  display: none;
+  align-items: center;
+  gap: .5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
 
 @media (max-width: 768px) {
   .nav-links { display: none; }
   .nav-search { display: none; }
   .nav-actions-desktop { display: none; }
-  .nav-hamburger { display: flex; align-items: center; }
-
-  /* Keep cart icon visible in top bar */
-  .navbar { gap: .75rem; }
+  .nav-mobile-group { display: flex; }
+  .nav-hamburger { display: flex; }
 }
 </style>
 
@@ -273,114 +415,103 @@
             <li><a href="<?= url('products') ?>">Shop</a></li>
         </ul>
 
-        <!-- Desktop search bar -->
+        <!-- Desktop search -->
         <div class="nav-search" id="navSearch">
-            <svg class="nav-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="nav-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <input type="text" class="nav-search-input" id="navSearchInput"
                    placeholder="Search products…" autocomplete="off"
-                   aria-label="Search products" aria-autocomplete="list"
-                   aria-controls="navAcDropdown">
+                   aria-label="Search products">
             <div class="nav-ac-dropdown" id="navAcDropdown" role="listbox"></div>
         </div>
 
-        <!-- Desktop auth actions -->
+        <!-- Desktop actions -->
         <div class="nav-actions nav-actions-desktop">
-            <a href="<?= url('cart') ?>" class="btn-cart" aria-label="Cart">🛒</a>
+            <a href="<?= url('cart') ?>" class="nav-cart-btn" aria-label="Cart">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+            </a>
 
             <?php if (Session::isLoggedIn()): ?>
-                <a href="<?= url('account/wishlist') ?>">Wishlist</a>
-                <a href="<?= url('account') ?>">My Account</a>
-                <a href="<?= url('logout') ?>">Logout</a>
+                <a href="<?= url('account/wishlist') ?>" class="nav-link-plain">Wishlist</a>
+                <a href="<?= url('account') ?>" class="nav-link-plain">Account</a>
+                <a href="<?= url('logout') ?>" class="nav-link-plain">Logout</a>
             <?php else: ?>
-                <a href="<?= url('login') ?>" class="btn btn-outline">Login</a>
-                <a href="<?= url('register') ?>" class="btn btn-primary">Register</a>
+                <a href="<?= url('login') ?>" class="nav-btn nav-btn-outline">Login</a>
+                <a href="<?= url('register') ?>" class="nav-btn nav-btn-solid">Register</a>
             <?php endif; ?>
         </div>
 
-        <!-- Mobile: cart + hamburger -->
-        <div class="nav-actions" style="margin-left:auto;" id="mobileTopActions">
-            <a href="<?= url('cart') ?>" class="btn-cart" aria-label="Cart" style="display:none;" id="mobileCartBtn">🛒</a>
+        <!-- Mobile group: cart + hamburger (hidden on desktop via CSS) -->
+        <div class="nav-mobile-group" id="navMobileGroup">
+            <a href="<?= url('cart') ?>" class="nav-cart-btn" aria-label="Cart">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+            </a>
+            <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </div>
-        <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
-            <svg id="hamburgerIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-            <svg id="closeIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="display:none;">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-        </button>
 
     </nav>
-
-    <!-- Mobile drawer menu -->
-    <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Mobile navigation">
-
-        <!-- Mobile search -->
-        <div class="mobile-search" id="mobileNavSearch">
-            <svg class="nav-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input type="text" class="nav-search-input" id="mobileSearchInput"
-                   placeholder="Search products…" autocomplete="off"
-                   aria-label="Search products">
-            <div class="nav-ac-dropdown" id="mobileAcDropdown" role="listbox"></div>
-        </div>
-
-        <ul class="mobile-menu-links">
-            <li><a href="<?= url() ?>">Home</a></li>
-            <li><a href="<?= url('products') ?>">Shop</a></li>
-        </ul>
-
-        <div class="mobile-menu-actions">
-            <?php if (Session::isLoggedIn()): ?>
-                <a href="<?= url('account/wishlist') ?>">Wishlist</a>
-                <a href="<?= url('account') ?>">My Account</a>
-                <a href="<?= url('logout') ?>">Logout</a>
-            <?php else: ?>
-                <a href="<?= url('login') ?>" class="btn btn-outline">Login</a>
-                <a href="<?= url('register') ?>" class="btn btn-primary">Register</a>
-            <?php endif; ?>
-        </div>
-    </div>
 </header>
+
+<!-- Full-screen mobile overlay -->
+<div class="nav-mobile-overlay" id="mobileOverlay" role="dialog" aria-label="Mobile navigation">
+
+    <!-- Search -->
+    <div class="mob-search" id="mobSearchWrap">
+        <svg class="mob-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="mob-search-input" id="mobSearchInput"
+               placeholder="Search products…" autocomplete="off"
+               aria-label="Search">
+        <div class="mob-ac-dropdown nav-ac-dropdown" id="mobAcDropdown" role="listbox"></div>
+    </div>
+
+    <a href="<?= url() ?>" onclick="closeMobMenu()">Home</a>
+    <a href="<?= url('products') ?>" onclick="closeMobMenu()">Shop</a>
+
+    <div class="mob-divider"></div>
+
+    <div class="nav-mobile-auth">
+        <?php if (Session::isLoggedIn()): ?>
+            <a href="<?= url('account/wishlist') ?>" class="mob-auth-ghost" onclick="closeMobMenu()">Wishlist</a>
+            <a href="<?= url('account') ?>" class="mob-auth-ghost" onclick="closeMobMenu()">My Account</a>
+            <a href="<?= url('logout') ?>" class="mob-auth-outline" onclick="closeMobMenu()">Logout</a>
+        <?php else: ?>
+            <a href="<?= url('login') ?>" class="mob-auth-outline" onclick="closeMobMenu()">Login</a>
+            <a href="<?= url('register') ?>" class="mob-auth-solid" onclick="closeMobMenu()">Create Account</a>
+        <?php endif; ?>
+    </div>
+
+</div>
 
 <script>
 (function () {
-    var acUrl     = '<?= url('search/autocomplete') ?>';
+    var acUrl    = '<?= url('search/autocomplete') ?>';
     var searchUrl = '<?= url('search') ?>';
 
-    /* ── Desktop autocomplete ── */
-    initAutocomplete(
-        document.getElementById('navSearchInput'),
-        document.getElementById('navAcDropdown'),
-        document.getElementById('navSearch')
-    );
-
-    /* ── Mobile autocomplete ── */
-    initAutocomplete(
-        document.getElementById('mobileSearchInput'),
-        document.getElementById('mobileAcDropdown'),
-        document.getElementById('mobileNavSearch')
-    );
-
-    function initAutocomplete(input, dropdown, container) {
+    /* ── Shared autocomplete factory ── */
+    function initAC(input, dropdown, container) {
         if (!input || !dropdown) return;
-        var timer = null;
-        var lastQ = '';
-        var highlighted = -1;
+        var timer = null, lastQ = '', hi = -1;
 
         function open()  { dropdown.classList.add('open'); }
-        function close() { dropdown.classList.remove('open'); highlighted = -1; }
+        function close() { dropdown.classList.remove('open'); hi = -1; }
 
-        function renderResults(items, q) {
+        function render(items, q) {
             dropdown.innerHTML = '';
-            if (items.length === 0) {
-                dropdown.innerHTML = '<div class="nav-ac-empty">No products found for "' + q + '"</div>';
+            if (!items.length) {
+                dropdown.innerHTML = '<div class="nav-ac-empty">No results for "' + q + '"</div>';
                 open(); return;
             }
             items.forEach(function (p) {
@@ -388,26 +519,22 @@
                 a.className = 'nav-ac-item';
                 a.href = p.url;
                 a.setAttribute('role', 'option');
-                var imgHtml = p.image
+                a.innerHTML = (p.image
                     ? '<img class="nav-ac-img" src="' + p.image + '" alt="' + p.name + '" loading="lazy">'
-                    : '<div class="nav-ac-img-placeholder"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>';
-                a.innerHTML = imgHtml +
-                    '<span class="nav-ac-name">' + p.name + '</span>' +
-                    '<span class="nav-ac-price">' + p.price + '</span>';
+                    : '<div class="nav-ac-img-placeholder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>')
+                    + '<span class="nav-ac-name">' + p.name + '</span>'
+                    + '<span class="nav-ac-price">' + p.price + '</span>';
                 dropdown.appendChild(a);
             });
-            var footer = document.createElement('div');
-            footer.className = 'nav-ac-footer';
-            footer.textContent = 'See all results for "' + q + '"';
-            footer.addEventListener('click', function () { goSearch(q); });
-            dropdown.appendChild(footer);
-            highlighted = -1;
-            open();
+            var f = document.createElement('div');
+            f.className = 'nav-ac-footer';
+            f.textContent = 'See all results for "' + q + '"';
+            f.onclick = function () { go(q); };
+            dropdown.appendChild(f);
+            hi = -1; open();
         }
 
-        function goSearch(q) {
-            window.location.href = searchUrl + '?q=' + encodeURIComponent(q);
-        }
+        function go(q) { window.location.href = searchUrl + '?q=' + encodeURIComponent(q); }
 
         function doFetch(q) {
             if (q === lastQ) return;
@@ -416,8 +543,7 @@
             xhr.open('GET', acUrl + '?q=' + encodeURIComponent(q), true);
             xhr.onload = function () {
                 if (xhr.status === 200) {
-                    try { renderResults(JSON.parse(xhr.responseText), q); }
-                    catch (e) { close(); }
+                    try { render(JSON.parse(xhr.responseText), q); } catch(e) { close(); }
                 }
             };
             xhr.send();
@@ -434,22 +560,15 @@
 
         input.addEventListener('keydown', function (e) {
             var items = dropdown.querySelectorAll('.nav-ac-item');
-            if (e.key === 'ArrowDown') {
+            if (e.key === 'ArrowDown') { e.preventDefault(); hi = Math.min(hi+1, items.length-1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); hi = Math.max(hi-1, -1); }
+            else if (e.key === 'Enter') {
                 e.preventDefault();
-                highlighted = Math.min(highlighted + 1, items.length - 1);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                highlighted = Math.max(highlighted - 1, -1);
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (highlighted >= 0 && items[highlighted]) {
-                    window.location.href = items[highlighted].href;
-                } else { goSearch(input.value.trim()); }
+                if (hi >= 0 && items[hi]) window.location.href = items[hi].href;
+                else go(input.value.trim());
                 return;
             } else if (e.key === 'Escape') { close(); return; }
-            items.forEach(function (el, i) {
-                el.classList.toggle('highlighted', i === highlighted);
-            });
+            items.forEach(function (el, i) { el.classList.toggle('highlighted', i === hi); });
         });
 
         document.addEventListener('click', function (e) {
@@ -457,28 +576,39 @@
         });
     }
 
-    /* ── Hamburger toggle ── */
-    var hamburger   = document.getElementById('navHamburger');
-    var mobileMenu  = document.getElementById('mobileMenu');
-    var hamburgerIcon = document.getElementById('hamburgerIcon');
-    var closeIcon   = document.getElementById('closeIcon');
-    var mobileCartBtn = document.getElementById('mobileCartBtn');
+    initAC(
+        document.getElementById('navSearchInput'),
+        document.getElementById('navAcDropdown'),
+        document.getElementById('navSearch')
+    );
+    initAC(
+        document.getElementById('mobSearchInput'),
+        document.getElementById('mobAcDropdown'),
+        document.getElementById('mobSearchWrap')
+    );
 
-    function applyMobileLayout() {
-        var isMobile = window.innerWidth <= 768;
-        if (mobileCartBtn) mobileCartBtn.style.display = isMobile ? 'inline' : 'none';
-        if (hamburger)     hamburger.style.display     = isMobile ? 'flex'   : 'none';
-    }
-    applyMobileLayout();
-    window.addEventListener('resize', applyMobileLayout);
+    /* ── Mobile overlay toggle ── */
+    var hamburger = document.getElementById('navHamburger');
+    var overlay   = document.getElementById('mobileOverlay');
 
-    if (hamburger && mobileMenu) {
+    window.closeMobMenu = function () {
+        overlay.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    };
+
+    if (hamburger && overlay) {
         hamburger.addEventListener('click', function () {
-            var isOpen = mobileMenu.classList.toggle('open');
+            var isOpen = overlay.classList.toggle('open');
+            hamburger.classList.toggle('open', isOpen);
             hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            hamburgerIcon.style.display = isOpen ? 'none'  : 'block';
-            closeIcon.style.display     = isOpen ? 'block' : 'none';
+            document.body.style.overflow = isOpen ? 'hidden' : '';
         });
     }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay && overlay.classList.contains('open')) closeMobMenu();
+    });
 })();
 </script>
