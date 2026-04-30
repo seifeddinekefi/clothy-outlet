@@ -169,15 +169,97 @@
   font-size: 1.1rem;
   text-decoration: none;
 }
-.btn { border-radius: 20px; padding: .38rem .9rem; font-size: .8rem; font-weight: 600; text-decoration: none; transition: all .2s; }
+.btn { border-radius: 20px; padding: .38rem .9rem; font-size: .8rem; font-weight: 600; text-decoration: none; transition: all .2s; display: inline-block; }
 .btn-outline { border: 1.5px solid #0a0a0a; color: #0a0a0a; }
 .btn-outline:hover { background: #0a0a0a; color: #fff; }
 .btn-primary { background: #0a0a0a; color: #fff; border: 1.5px solid #0a0a0a; }
 .btn-primary:hover { background: #2a2a2a; border-color: #2a2a2a; }
 
+/* ── Hamburger button (mobile only) ── */
+.nav-hamburger {
+  display: none;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .25rem;
+  color: #0a0a0a;
+  line-height: 1;
+}
+.nav-hamburger svg { display: block; }
+
+/* ── Mobile menu drawer ── */
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  background: #fff;
+  border-top: 1px solid #e8e6e2;
+  padding: 1rem var(--container-pad, 1.5rem) 1.25rem;
+}
+.mobile-menu.open { display: flex; }
+
+.mobile-search {
+  position: relative;
+  margin-bottom: .85rem;
+}
+.mobile-search .nav-search-input {
+  max-width: none;
+}
+.mobile-search .nav-search-icon {
+  left: .75rem;
+}
+.mobile-menu-links {
+  list-style: none;
+  margin: 0 0 .75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+.mobile-menu-links a {
+  display: block;
+  padding: .55rem 0;
+  font-size: .88rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #3a3730;
+  text-decoration: none;
+  border-bottom: 1px solid #f3f1ee;
+  transition: color .2s;
+}
+.mobile-menu-links a:hover { color: #c4a97a; }
+.mobile-menu-actions {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  padding-top: .35rem;
+}
+.mobile-menu-actions .btn { flex: 1; text-align: center; min-width: 90px; }
+.mobile-menu-actions a:not(.btn) {
+  display: block;
+  width: 100%;
+  padding: .55rem 0;
+  font-size: .88rem;
+  font-weight: 500;
+  color: #3a3730;
+  text-decoration: none;
+  border-bottom: 1px solid #f3f1ee;
+  transition: color .2s;
+}
+.mobile-menu-actions a:not(.btn):hover { color: #c4a97a; }
+
+/* ── Mobile ac dropdown fix ── */
+.mobile-search .nav-ac-dropdown { z-index: 10000; }
+
 @media (max-width: 768px) {
   .nav-links { display: none; }
-  .nav-search { max-width: none; }
+  .nav-search { display: none; }
+  .nav-actions-desktop { display: none; }
+  .nav-hamburger { display: flex; align-items: center; }
+
+  /* Keep cart icon visible in top bar */
+  .navbar { gap: .75rem; }
 }
 </style>
 
@@ -191,7 +273,7 @@
             <li><a href="<?= url('products') ?>">Shop</a></li>
         </ul>
 
-        <!-- Search bar -->
+        <!-- Desktop search bar -->
         <div class="nav-search" id="navSearch">
             <svg class="nav-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -203,7 +285,8 @@
             <div class="nav-ac-dropdown" id="navAcDropdown" role="listbox"></div>
         </div>
 
-        <div class="nav-actions">
+        <!-- Desktop auth actions -->
+        <div class="nav-actions nav-actions-desktop">
             <a href="<?= url('cart') ?>" class="btn-cart" aria-label="Cart">🛒</a>
 
             <?php if (Session::isLoggedIn()): ?>
@@ -216,110 +299,186 @@
             <?php endif; ?>
         </div>
 
+        <!-- Mobile: cart + hamburger -->
+        <div class="nav-actions" style="margin-left:auto;" id="mobileTopActions">
+            <a href="<?= url('cart') ?>" class="btn-cart" aria-label="Cart" style="display:none;" id="mobileCartBtn">🛒</a>
+        </div>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+            <svg id="hamburgerIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+            <svg id="closeIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="display:none;">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+
     </nav>
+
+    <!-- Mobile drawer menu -->
+    <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Mobile navigation">
+
+        <!-- Mobile search -->
+        <div class="mobile-search" id="mobileNavSearch">
+            <svg class="nav-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" class="nav-search-input" id="mobileSearchInput"
+                   placeholder="Search products…" autocomplete="off"
+                   aria-label="Search products">
+            <div class="nav-ac-dropdown" id="mobileAcDropdown" role="listbox"></div>
+        </div>
+
+        <ul class="mobile-menu-links">
+            <li><a href="<?= url() ?>">Home</a></li>
+            <li><a href="<?= url('products') ?>">Shop</a></li>
+        </ul>
+
+        <div class="mobile-menu-actions">
+            <?php if (Session::isLoggedIn()): ?>
+                <a href="<?= url('account/wishlist') ?>">Wishlist</a>
+                <a href="<?= url('account') ?>">My Account</a>
+                <a href="<?= url('logout') ?>">Logout</a>
+            <?php else: ?>
+                <a href="<?= url('login') ?>" class="btn btn-outline">Login</a>
+                <a href="<?= url('register') ?>" class="btn btn-primary">Register</a>
+            <?php endif; ?>
+        </div>
+    </div>
 </header>
 
 <script>
 (function () {
-    var input      = document.getElementById('navSearchInput');
-    var dropdown   = document.getElementById('navAcDropdown');
-    var acUrl      = '<?= url('search/autocomplete') ?>';
-    var searchUrl  = '<?= url('search') ?>';
-    var timer      = null;
-    var lastQ      = '';
-    var highlighted = -1;
+    var acUrl     = '<?= url('search/autocomplete') ?>';
+    var searchUrl = '<?= url('search') ?>';
 
-    if (!input) return;
+    /* ── Desktop autocomplete ── */
+    initAutocomplete(
+        document.getElementById('navSearchInput'),
+        document.getElementById('navAcDropdown'),
+        document.getElementById('navSearch')
+    );
 
-    function debounce(fn, ms) {
-        return function () {
-            clearTimeout(timer);
-            timer = setTimeout(fn, ms);
-        };
-    }
+    /* ── Mobile autocomplete ── */
+    initAutocomplete(
+        document.getElementById('mobileSearchInput'),
+        document.getElementById('mobileAcDropdown'),
+        document.getElementById('mobileNavSearch')
+    );
 
-    function open()  { dropdown.classList.add('open'); }
-    function close() { dropdown.classList.remove('open'); highlighted = -1; }
+    function initAutocomplete(input, dropdown, container) {
+        if (!input || !dropdown) return;
+        var timer = null;
+        var lastQ = '';
+        var highlighted = -1;
 
-    function renderResults(items, q) {
-        dropdown.innerHTML = '';
-        if (items.length === 0) {
-            dropdown.innerHTML = '<div class="nav-ac-empty">No products found for "' + q + '"</div>';
+        function open()  { dropdown.classList.add('open'); }
+        function close() { dropdown.classList.remove('open'); highlighted = -1; }
+
+        function renderResults(items, q) {
+            dropdown.innerHTML = '';
+            if (items.length === 0) {
+                dropdown.innerHTML = '<div class="nav-ac-empty">No products found for "' + q + '"</div>';
+                open(); return;
+            }
+            items.forEach(function (p) {
+                var a = document.createElement('a');
+                a.className = 'nav-ac-item';
+                a.href = p.url;
+                a.setAttribute('role', 'option');
+                var imgHtml = p.image
+                    ? '<img class="nav-ac-img" src="' + p.image + '" alt="' + p.name + '" loading="lazy">'
+                    : '<div class="nav-ac-img-placeholder"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>';
+                a.innerHTML = imgHtml +
+                    '<span class="nav-ac-name">' + p.name + '</span>' +
+                    '<span class="nav-ac-price">' + p.price + '</span>';
+                dropdown.appendChild(a);
+            });
+            var footer = document.createElement('div');
+            footer.className = 'nav-ac-footer';
+            footer.textContent = 'See all results for "' + q + '"';
+            footer.addEventListener('click', function () { goSearch(q); });
+            dropdown.appendChild(footer);
+            highlighted = -1;
             open();
-            return;
         }
-        items.forEach(function (p, i) {
-            var a = document.createElement('a');
-            a.className  = 'nav-ac-item';
-            a.href       = p.url;
-            a.setAttribute('role', 'option');
-            var imgHtml = p.image
-                ? '<img class="nav-ac-img" src="' + p.image + '" alt="' + p.name + '" loading="lazy">'
-                : '<div class="nav-ac-img-placeholder"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>';
-            a.innerHTML = imgHtml +
-                '<span class="nav-ac-name">' + p.name + '</span>' +
-                '<span class="nav-ac-price">' + p.price + '</span>';
-            dropdown.appendChild(a);
-        });
-        var footer = document.createElement('div');
-        footer.className = 'nav-ac-footer';
-        footer.textContent = 'See all results for "' + q + '"';
-        footer.addEventListener('click', function () { goSearch(q); });
-        dropdown.appendChild(footer);
-        highlighted = -1;
-        open();
-    }
 
-    function goSearch(q) {
-        window.location.href = searchUrl + '?q=' + encodeURIComponent(q);
-    }
-
-    function fetch(q) {
-        if (q === lastQ) return;
-        lastQ = q;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', acUrl + '?q=' + encodeURIComponent(q), true);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                try { renderResults(JSON.parse(xhr.responseText), q); }
-                catch (e) { close(); }
-            }
-        };
-        xhr.send();
-    }
-
-    input.addEventListener('input', debounce(function () {
-        var q = input.value.trim();
-        if (q.length < 2) { close(); lastQ = ''; return; }
-        fetch(q);
-    }, 280));
-
-    input.addEventListener('keydown', function (e) {
-        var items = dropdown.querySelectorAll('.nav-ac-item');
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            highlighted = Math.min(highlighted + 1, items.length - 1);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            highlighted = Math.max(highlighted - 1, -1);
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (highlighted >= 0 && items[highlighted]) {
-                window.location.href = items[highlighted].href;
-            } else {
-                goSearch(input.value.trim());
-            }
-            return;
-        } else if (e.key === 'Escape') {
-            close(); return;
+        function goSearch(q) {
+            window.location.href = searchUrl + '?q=' + encodeURIComponent(q);
         }
-        items.forEach(function (el, i) {
-            el.classList.toggle('highlighted', i === highlighted);
-        });
-    });
 
-    document.addEventListener('click', function (e) {
-        if (!document.getElementById('navSearch').contains(e.target)) close();
-    });
+        function doFetch(q) {
+            if (q === lastQ) return;
+            lastQ = q;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', acUrl + '?q=' + encodeURIComponent(q), true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try { renderResults(JSON.parse(xhr.responseText), q); }
+                    catch (e) { close(); }
+                }
+            };
+            xhr.send();
+        }
+
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                var q = input.value.trim();
+                if (q.length < 2) { close(); lastQ = ''; return; }
+                doFetch(q);
+            }, 280);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            var items = dropdown.querySelectorAll('.nav-ac-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlighted = Math.min(highlighted + 1, items.length - 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlighted = Math.max(highlighted - 1, -1);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (highlighted >= 0 && items[highlighted]) {
+                    window.location.href = items[highlighted].href;
+                } else { goSearch(input.value.trim()); }
+                return;
+            } else if (e.key === 'Escape') { close(); return; }
+            items.forEach(function (el, i) {
+                el.classList.toggle('highlighted', i === highlighted);
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (container && !container.contains(e.target)) close();
+        });
+    }
+
+    /* ── Hamburger toggle ── */
+    var hamburger   = document.getElementById('navHamburger');
+    var mobileMenu  = document.getElementById('mobileMenu');
+    var hamburgerIcon = document.getElementById('hamburgerIcon');
+    var closeIcon   = document.getElementById('closeIcon');
+    var mobileCartBtn = document.getElementById('mobileCartBtn');
+
+    function applyMobileLayout() {
+        var isMobile = window.innerWidth <= 768;
+        if (mobileCartBtn) mobileCartBtn.style.display = isMobile ? 'inline' : 'none';
+        if (hamburger)     hamburger.style.display     = isMobile ? 'flex'   : 'none';
+    }
+    applyMobileLayout();
+    window.addEventListener('resize', applyMobileLayout);
+
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener('click', function () {
+            var isOpen = mobileMenu.classList.toggle('open');
+            hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            hamburgerIcon.style.display = isOpen ? 'none'  : 'block';
+            closeIcon.style.display     = isOpen ? 'block' : 'none';
+        });
+    }
 })();
 </script>
