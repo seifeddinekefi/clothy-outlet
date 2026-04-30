@@ -2119,8 +2119,81 @@ $view->setLayout('');
                 grid-template-columns: 1fr;
             }
 
+            /* Filters collapse behind a toggle on mobile */
             .shop-sidebar {
                 position: static;
+                display: none;
+                padding: 1rem;
+            }
+
+            .shop-sidebar.mob-open {
+                display: block;
+            }
+
+            .shop-sidebar .sidebar-title {
+                font-size: .7rem;
+                margin-bottom: .65rem;
+                padding-bottom: .5rem;
+            }
+
+            .shop-sidebar .filter-group {
+                margin-bottom: .85rem;
+            }
+
+            .shop-sidebar .filter-group-title {
+                font-size: .7rem;
+                margin-bottom: .45rem;
+            }
+
+            .shop-sidebar .filter-option {
+                padding: .2rem 0;
+                font-size: .8rem;
+            }
+
+            /* Sizes in a single horizontal row on mobile */
+            .shop-sidebar .size-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+
+            .shop-sidebar .size-btn {
+                aspect-ratio: auto;
+                padding: .26rem .1rem;
+                font-size: .7rem;
+            }
+
+            /* Filter toggle button */
+            .mob-filter-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: .4rem;
+                padding: .48rem .9rem;
+                font-size: .72rem;
+                font-weight: 600;
+                letter-spacing: .07em;
+                text-transform: uppercase;
+                border: 1.5px solid var(--clr-gray-200);
+                border-radius: var(--radius-full);
+                background: var(--clr-white);
+                cursor: pointer;
+                transition: all var(--transition-fast);
+                flex-shrink: 0;
+            }
+
+            .mob-filter-toggle:hover,
+            .mob-filter-toggle.active {
+                border-color: var(--clr-black);
+                background: var(--clr-black);
+                color: var(--clr-white);
+            }
+
+            .shop-toolbar {
+                flex-wrap: wrap;
+                gap: .55rem;
+                margin-bottom: .85rem;
+            }
+
+            .shop-toolbar .search-box {
+                flex: 1 1 140px;
             }
 
             .modal-box {
@@ -2144,6 +2217,9 @@ $view->setLayout('');
             .nav-hamburger {
                 display: flex;
             }
+
+            /* Hide hero arrows — slideshow is auto on mobile */
+            .hero-arrow { display: none; }
 
             /* Tighter section padding on mobile */
             .section {
@@ -2951,6 +3027,40 @@ $view->setLayout('');
         function toggleFilter(titleEl) {
             titleEl.parentElement.classList.toggle('collapsed');
         }
+
+        /* ── Mobile filter toggle button ─────────────────────── */
+        (function () {
+            var sidebar  = document.querySelector('.shop-sidebar');
+            var toolbar  = document.querySelector('.shop-toolbar');
+            if (!sidebar || !toolbar) return;
+
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'mob-filter-toggle';
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg> Filters';
+
+            /* only show on mobile */
+            function syncVisibility() {
+                btn.style.display = window.innerWidth <= 900 ? '' : 'none';
+                if (window.innerWidth > 900) {
+                    sidebar.classList.remove('mob-open');
+                    sidebar.style.display = '';
+                    btn.classList.remove('active');
+                }
+            }
+            syncVisibility();
+            window.addEventListener('resize', syncVisibility);
+
+            btn.addEventListener('click', function () {
+                var open = sidebar.classList.toggle('mob-open');
+                btn.classList.toggle('active', open);
+                btn.innerHTML = open
+                    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Close'
+                    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg> Filters';
+            });
+
+            toolbar.insertBefore(btn, toolbar.firstChild);
+        })();
 
         /* ── Shop Filtering, Sorting & Load More ─────────────── */
         var productsPerPage = 12;
