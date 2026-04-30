@@ -118,21 +118,32 @@ class OrderItem extends Model
     /**
      * Create a single order item.
      *
-     * @param  int    $orderId
-     * @param  int    $productId
-     * @param  int    $quantity
-     * @param  float  $price      Unit price at time of order
+     * @param  int         $orderId
+     * @param  int         $productId
+     * @param  int         $quantity
+     * @param  float       $price      Unit price at time of order
      * @param  string|null $size
+     * @param  string|null $color      Color chosen at purchase
+     * @param  string|null $quality    Quality tier chosen at purchase
      * @return string|false  New item id
      */
-    public function create(int $orderId, int $productId, int $quantity, float $price, ?string $size = null): string|false
-    {
+    public function create(
+        int $orderId,
+        int $productId,
+        int $quantity,
+        float $price,
+        ?string $size = null,
+        ?string $color = null,
+        ?string $quality = null
+    ): string|false {
         return $this->insert([
-            'order_id'   => $orderId,
-            'product_id' => $productId,
-            'size'       => $size,
-            'quantity'   => max(1, $quantity),
-            'price'      => $price,
+            'order_id'        => $orderId,
+            'product_id'      => $productId,
+            'size'            => $size,
+            'selected_color'  => $color,
+            'selected_quality' => $quality,
+            'quantity'        => max(1, $quantity),
+            'price'           => $price,
         ]);
     }
 
@@ -140,7 +151,7 @@ class OrderItem extends Model
      * Bulk-insert all items for a new order within a single transaction.
      *
      * @param  int   $orderId
-     * @param  array<int, array{product_id: int, quantity: int, price: float, size?: string|null}> $items
+     * @param  array<int, array{product_id:int, quantity:int, price:float, size?:string|null, color?:string|null, quality?:string|null}> $items
      * @return bool
      */
     public function bulkCreate(int $orderId, array $items): bool
@@ -156,7 +167,9 @@ class OrderItem extends Model
                     (int)   $item['product_id'],
                     (int)   $item['quantity'],
                     (float) $item['price'],
-                    $item['size'] ?? null
+                    $item['size']    ?? null,
+                    $item['color']   ?? null,
+                    $item['quality'] ?? null
                 );
             }
         });

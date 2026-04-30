@@ -27,7 +27,7 @@ function _sidebar_active(string $prefix, string $uri): string
 
     <nav class="sidebar-nav" role="navigation" aria-label="Admin navigation">
         <ul>
-            <li class="<?= _sidebar_active('/admin/dashboard', $_uri) ?: (_sidebar_active('/admin', $_uri) && !str_starts_with($_uri, '/admin/products') && !str_starts_with($_uri, '/admin/categories') && !str_starts_with($_uri, '/admin/orders') && !str_starts_with($_uri, '/admin/customers') && !str_starts_with($_uri, '/admin/coupons') && !str_starts_with($_uri, '/admin/settings') ? 'active' : '') ?>">
+            <li class="<?= _sidebar_active('/admin/dashboard', $_uri) ?: (_sidebar_active('/admin', $_uri) && !str_starts_with($_uri, '/admin/products') && !str_starts_with($_uri, '/admin/categories') && !str_starts_with($_uri, '/admin/orders') && !str_starts_with($_uri, '/admin/customers') && !str_starts_with($_uri, '/admin/coupons') && !str_starts_with($_uri, '/admin/settings') && !str_starts_with($_uri, '/admin/subscribers') ? 'active' : '') ?>">
                 <a href="<?= url('admin') ?>">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="9" />
@@ -89,6 +89,15 @@ function _sidebar_active(string $prefix, string $uri): string
                         <path d="M16 12h.01" />
                     </svg>
                     Coupons
+                </a>
+            </li>
+            <li class="<?= _sidebar_active('/admin/subscribers', $_uri) ?>">
+                <a href="<?= url('admin/subscribers') ?>">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    Subscribers
                 </a>
             </li>
             <li class="<?= _sidebar_active('/admin/settings', $_uri) ?>">

@@ -381,6 +381,58 @@ class Product extends Model
         );
     }
 
+    /**
+     * Lightweight search for autocomplete — returns id, name, slug, price, image.
+     *
+     * @return array<int, object>
+     */
+    public function autocomplete(string $term, int $limit = 6): array
+    {
+        return $this->db->select(
+            "SELECT p.id, p.name, p.slug, p.price,
+                    pi.image_path AS primary_image
+               FROM `products` p
+               LEFT JOIN `product_images` pi ON pi.product_id = p.id AND pi.is_primary = 1
+              WHERE p.is_active = 1
+                AND (p.name LIKE :q OR p.description LIKE :q2)
+              ORDER BY p.name ASC
+              LIMIT :lim",
+            [':q' => '%' . $term . '%', ':q2' => '%' . $term . '%', ':lim' => $limit]
+        );
+    }
+
+    /**
+     * Fetch a set of products by their IDs, preserving the given order.
+     *
+     * @param  int[] $ids
+     * @return array<int, object>
+     */
+    public function findByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+        $ids = array_map('intval', $ids);
+        $placeholders = [];
+        $params = [];
+        foreach ($ids as $i => $id) {
+            $key = ':id' . $i;
+            $placeholders[] = $key;
+            $params[$key] = $id;
+        }
+        $in    = implode(',', $placeholders);
+        $order = 'FIELD(p.id,' . implode(',', $ids) . ')';
+        return $this->db->select(
+            "SELECT p.id, p.name, p.slug, p.price, p.compare_price,
+                    pi.image_path AS primary_image
+               FROM `products` p
+               LEFT JOIN `product_images` pi ON pi.product_id = p.id AND pi.is_primary = 1
+              WHERE p.id IN ({$in}) AND p.is_active = 1
+              ORDER BY {$order}",
+            $params
+        );
+    }
+
     // ── Existence / Validation ────────────────────────────────
 
     /**

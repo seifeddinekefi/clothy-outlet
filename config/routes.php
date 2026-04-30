@@ -27,7 +27,8 @@ $router->get('/products/{category}',  'ProductController@category', 'products.ca
 $router->get('/product/{id}',         'ProductController@show',     'product.show');
 $router->get('/product/{id}/images',  'ProductController@images',   'product.images');
 $router->get('/product/{id}/sizes',   'ProductController@sizes',    'product.sizes');
-$router->get('/search',               'ProductController@search',   'search');
+$router->get('/search',               'ProductController@search',        'search');
+$router->get('/search/autocomplete',  'ProductController@autocomplete',  'search.autocomplete');
 
 // ─── Cart Routes ─────────────────────────────────────────────
 
@@ -80,6 +81,10 @@ $router->group(['prefix' => 'checkout', 'middleware' => 'GuestCheckoutMiddleware
 // ─── Guest Order Tracking ────────────────────────────────────
 
 $router->get('/order/track/{token}', 'CheckoutController@trackOrder', 'order.track');
+
+// ─── Newsletter ──────────────────────────────────────────────
+
+$router->post('/newsletter/subscribe', 'NewsletterController@subscribe', 'newsletter.subscribe');
 
 // ─── Admin Routes (admin-protected) ─────────────────────────
 // Auth is enforced by AdminMiddleware (role check included).
@@ -137,4 +142,7 @@ $router->group(['prefix' => 'admin', 'middleware' => 'AdminMiddleware'], functio
     $router->post('/settings/store',   'Admin\SettingsController@updateStore',   'admin.settings.store');
     $router->post('/settings/account', 'Admin\SettingsController@updateAccount', 'admin.settings.account');
     $router->post('/settings/password', 'Admin\SettingsController@updatePassword', 'admin.settings.password');
+
+    // ── Subscribers ──────────────────────────────────────
+    $router->get('/subscribers', 'Admin\SubscriberController@index', 'admin.subscribers');
 });

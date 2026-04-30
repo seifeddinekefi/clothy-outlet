@@ -5,7 +5,10 @@
  */
 $_p = $product ?? null;
 $_sizes = $sizes ?? [];
+$_colors = $colors ?? [];
+$_qualities = $qualities ?? [];
 $_inWishlist = (bool) ($inWishlist ?? false);
+$_recentProducts = $recentProducts ?? [];
 $_hasComparePrice = is_object($_p)
   && isset($_p->compare_price)
   && (float) $_p->compare_price > (float) ($_p->price ?? 0);
@@ -413,6 +416,135 @@ if ($_discount <= 0 && $_hasComparePrice && is_object($_p)) {
     50% { opacity: 0.5; }
   }
 
+  /* Quality Selector */
+  .pd-quality-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+  .pd-quality {
+    position: relative;
+  }
+  .pd-quality input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pd-quality span {
+    min-width: 64px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--pd-border);
+    border-radius: 8px;
+    padding: 0 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .pd-quality span:hover {
+    border-color: #bbb;
+    background: #fafafa;
+  }
+  .pd-quality input:checked + span {
+    border-color: var(--pd-accent);
+    background: var(--pd-accent);
+    color: #fff;
+  }
+
+  /* Color Picker */
+  .pd-color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .pd-color {
+    position: relative;
+  }
+  .pd-color input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pd-color-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: block;
+    cursor: pointer;
+    border: 3px solid transparent;
+    outline: 2px solid var(--pd-border);
+    transition: all 0.2s;
+  }
+  .pd-color input:checked + .pd-color-swatch {
+    outline-color: var(--pd-accent);
+    border-color: #fff;
+    transform: scale(1.12);
+  }
+  .pd-color-label {
+    font-size: 0.78rem;
+    color: var(--pd-muted);
+    margin-left: 0.25rem;
+  }
+
+  /* Recently Viewed */
+  .rv-section {
+    max-width: 1100px;
+    margin: 3rem auto 0;
+    padding: 0 1rem;
+  }
+  .rv-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pd-muted);
+    margin-bottom: 1.1rem;
+  }
+  .rv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  .rv-card {
+    text-decoration: none;
+    color: inherit;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--pd-border);
+    background: #fff;
+    transition: box-shadow 0.2s;
+  }
+  .rv-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.09); }
+  .rv-card-img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    display: block;
+    background: var(--pd-bg);
+  }
+  .rv-card-body {
+    padding: 0.55rem 0.65rem 0.65rem;
+  }
+  .rv-card-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.2rem;
+  }
+  .rv-card-price {
+    font-size: 0.78rem;
+    color: var(--pd-muted);
+  }
+
   /* Responsive */
   @media (max-width: 1024px) {
     .pd-wrap { gap: 2rem; }
@@ -485,18 +617,62 @@ if ($_discount <= 0 && $_hasComparePrice && is_object($_p)) {
           <?php if (!empty($_sizes)): ?>
             <div class="pd-label">Select Size</div>
             <div class="pd-size-grid">
-              <?php foreach ($_sizes as $idx => $s): 
+              <?php foreach ($_sizes as $idx => $s):
                 $outOfStock = (int)($s->stock ?? 1) <= 0;
               ?>
                 <label class="pd-size <?= $outOfStock ? 'out-of-stock' : '' ?>">
-                  <input type="radio" name="size" value="<?= e($s->size) ?>" 
-                         <?= $idx === 0 && !$outOfStock ? 'checked' : '' ?> 
+                  <input type="radio" name="size" value="<?= e($s->size) ?>"
+                         <?= $idx === 0 && !$outOfStock ? 'checked' : '' ?>
                          <?= $outOfStock ? 'disabled' : '' ?>
                          required>
                   <span><?= e($s->size) ?></span>
                 </label>
               <?php endforeach; ?>
             </div>
+          <?php endif; ?>
+
+          <!-- Quality Selection -->
+          <?php if (!empty($_qualities)): ?>
+            <?php
+            $HIGH_QUALITY_TYPES = ['220g', '250g'];
+            $firstQuality = $_qualities[0]->quality_type ?? '';
+            ?>
+            <div class="pd-label">Select Quality</div>
+            <div class="pd-quality-grid" id="qualityGrid">
+              <?php foreach ($_qualities as $qi => $q): ?>
+                <label class="pd-quality">
+                  <input type="radio" name="quality" value="<?= e($q->quality_type) ?>"
+                         id="quality_<?= e($q->quality_type) ?>"
+                         <?= $qi === 0 ? 'checked' : '' ?>
+                         onchange="onQualityChange(this.value)">
+                  <span><?= e($q->quality_type) ?></span>
+                </label>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+
+          <!-- Color Selection -->
+          <?php
+          $_hasColors    = !empty($_colors);
+          $_hasQualities = !empty($_qualities);
+          // Show color section if product has colors OR has high-quality tiers
+          $hasHighQuality = false;
+          foreach ($_qualities as $q) {
+              if (in_array($q->quality_type, ['220g', '250g'], true)) { $hasHighQuality = true; break; }
+          }
+          $showColorSection = $_hasColors || $hasHighQuality;
+          ?>
+          <?php if ($showColorSection): ?>
+            <?php
+            $colorsJson = json_encode(array_map(fn($c) => ['name' => $c->color_name, 'hex' => $c->color_hex], $_colors), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT);
+            $qualityTypes = json_encode(array_map(fn($q) => $q->quality_type, $_qualities), JSON_HEX_TAG);
+            $firstQualityType = !empty($_qualities) ? $_qualities[0]->quality_type : '';
+            ?>
+            <div class="pd-label">
+              Select Color: <span id="selectedColorName" style="font-weight:700;color:var(--pd-accent);text-transform:none;letter-spacing:0;"></span>
+            </div>
+            <div class="pd-color-grid" id="colorPicker"></div>
+            <input type="hidden" name="color" id="colorInput" value="">
           <?php endif; ?>
 
           <!-- Quantity -->
@@ -600,6 +776,29 @@ if ($_discount <= 0 && $_hasComparePrice && is_object($_p)) {
       </div>
     </div>
   </div>
+  <?php if (!empty($_recentProducts)): ?>
+    <div class="rv-section">
+      <div class="rv-title">Recently Viewed</div>
+      <div class="rv-grid">
+        <?php foreach ($_recentProducts as $rv): ?>
+          <a class="rv-card" href="<?= url('product/' . $rv->id) ?>">
+            <?php if (!empty($rv->primary_image)): ?>
+              <img class="rv-card-img" src="<?= url($rv->primary_image) ?>" alt="<?= e($rv->name) ?>" loading="lazy">
+            <?php else: ?>
+              <div class="rv-card-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+            <?php endif; ?>
+            <div class="rv-card-body">
+              <div class="rv-card-name"><?= e($rv->name) ?></div>
+              <div class="rv-card-price"><?= formatPrice($rv->price) ?></div>
+            </div>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  <?php endif; ?>
+
 </div>
 
 <script>
@@ -614,5 +813,79 @@ function toggleAccordion(btn) {
   var item = btn.closest('.pd-accordion-item');
   item.classList.toggle('open');
 }
+
+// ── Color & Quality logic ─────────────────────────────────────
+(function() {
+  var productColors  = <?= $colorsJson ?? '[]' ?>;
+  var qualityTypes   = <?= $qualityTypes ?? '[]' ?>;
+  var HIGH_QUALITY   = ['220g', '250g'];
+  var HIGH_Q_COLORS  = [{name:'White', hex:'#ffffff'}, {name:'Black', hex:'#000000'}];
+
+  var colorPicker    = document.getElementById('colorPicker');
+  var colorInput     = document.getElementById('colorInput');
+  var colorNameLabel = document.getElementById('selectedColorName');
+
+  if (!colorPicker) return; // no color section on this product
+
+  function renderColors(colors) {
+    colorPicker.innerHTML = '';
+    colorInput.value = '';
+    if (!colors || colors.length === 0) return;
+
+    colors.forEach(function(c, i) {
+      var lbl = document.createElement('label');
+      lbl.className = 'pd-color';
+      lbl.title = c.name;
+      var radio = document.createElement('input');
+      radio.type  = 'radio';
+      radio.name  = '_color_ui';
+      radio.value = c.name;
+      if (i === 0) {
+        radio.checked = true;
+        colorInput.value = c.name;
+        if (colorNameLabel) colorNameLabel.textContent = c.name;
+      }
+      radio.addEventListener('change', function() {
+        colorInput.value = c.name;
+        if (colorNameLabel) colorNameLabel.textContent = c.name;
+      });
+      var swatch = document.createElement('span');
+      swatch.className = 'pd-color-swatch';
+      // White needs a border so it's visible on white background
+      swatch.style.background = c.hex;
+      if (c.hex === '#ffffff' || c.name.toLowerCase() === 'white') {
+        swatch.style.outlineColor = '#ccc';
+      }
+      lbl.appendChild(radio);
+      lbl.appendChild(swatch);
+      colorPicker.appendChild(lbl);
+    });
+  }
+
+  function onQualityChange(qualityType) {
+    if (HIGH_QUALITY.indexOf(qualityType) !== -1) {
+      renderColors(HIGH_Q_COLORS);
+    } else {
+      renderColors(productColors);
+    }
+  }
+
+  // Wire quality radios
+  var qualityRadios = document.querySelectorAll('input[name="quality"]');
+  qualityRadios.forEach(function(r) {
+    r.addEventListener('change', function() { onQualityChange(this.value); });
+  });
+
+  // Initial render based on first checked quality (or product colors if no qualities)
+  var checkedQuality = document.querySelector('input[name="quality"]:checked');
+  if (checkedQuality) {
+    onQualityChange(checkedQuality.value);
+  } else {
+    renderColors(productColors);
+  }
+
+  // Expose for inline onchange handlers
+  window.onQualityChange = onQualityChange;
+})();
 </script>
 

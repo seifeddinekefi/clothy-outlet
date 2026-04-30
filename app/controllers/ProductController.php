@@ -83,24 +83,66 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $sizes = $sizeModel->findAvailable($productId);
+        $sizes     = $sizeModel->findAvailable($productId);
+        $colors    = (new ProductColor())->findByProduct($productId);
+        $qualities = (new ProductQuality())->findByProduct($productId);
 
         $inWishlist = false;
         if (Session::isLoggedIn()) {
             $inWishlist = (new Wishlist())->has((int) Session::user()['id'], $productId);
         }
 
+        // Track recently viewed (session, max 6, most recent first)
+        $recentIds = Session::get('recently_viewed') ?? [];
+        $recentIds = array_values(array_filter($recentIds, fn($i) => (int)$i !== $productId));
+        array_unshift($recentIds, $productId);
+        $recentIds = array_slice($recentIds, 0, 7);
+        Session::set('recently_viewed', $recentIds);
+
+        // Load recently viewed products for display (exclude current)
+        $displayIds     = array_filter($recentIds, fn($i) => (int)$i !== $productId);
+        $recentProducts = $productModel->findByIds(array_values($displayIds));
+
         $this->render('products.show', [
-            'pageTitle' => $product->name . ' — ' . APP_NAME,
-            'product'   => $product,
-            'sizes'     => $sizes,
-            'inWishlist' => $inWishlist,
+            'pageTitle'      => $product->name . ' — ' . APP_NAME,
+            'product'        => $product,
+            'sizes'          => $sizes,
+            'colors'         => $colors,
+            'qualities'      => $qualities,
+            'inWishlist'     => $inWishlist,
+            'recentProducts' => $recentProducts,
         ]);
     }
 
     public function search(): void
     {
         $this->index();
+    }
+
+    /**
+     * AJAX autocomplete — returns up to 6 matching products as JSON.
+     * GET /search/autocomplete?q=...
+     */
+    public function autocomplete(): void
+    {
+        $q = trim((string) ($_GET['q'] ?? ''));
+        header('Content-Type: application/json');
+        if (mb_strlen($q) < 2) {
+            echo json_encode([]);
+            exit;
+        }
+        $results = (new Product())->autocomplete($q, 6);
+        echo json_encode(array_map(function ($p) {
+            return [
+                'id'    => (int) $p->id,
+                'name'  => $p->name,
+                'slug'  => $p->slug,
+                'price' => formatPrice($p->price),
+                'image' => $p->primary_image ? url($p->primary_image) : null,
+                'url'   => url('product/' . $p->id),
+            ];
+        }, $results));
+        exit;
     }
 
     /**

@@ -12,31 +12,43 @@ Clothy Outlet is a PHP e-commerce website built with a custom MVC architecture. 
 This project targets fashion retail use cases and provides:
 
 - Customer storefront with product browsing, cart, checkout, and account pages.
-- Admin dashboard with management tools for products, categories, orders, customers, coupons, and settings.
+- Admin dashboard with management tools for products, categories, orders, customers, coupons, subscribers, and settings.
 - Secure request handling and session/authentication protections suitable for production hosting.
 
 ## Features
 
 ### Customer Features
 
-- Product catalog browsing with category and search support.
-- Product details with images, size selection, and stock-aware cart actions.
+- Product catalog browsing with category and price-range filters.
+- **Search autocomplete** — live product suggestions as you type in the navbar.
+- Product details with images, size selection, color picking, and quality tier selection.
 - Shopping cart with quantity updates and checkout summary.
 - Account area: profile, order history, and wishlist.
+- **Recently viewed products** — shown at the bottom of each product page.
 - **Guest checkout** — complete purchases without creating an account.
 - **Guest order tracking** — track orders via unique token URL without login.
 - Checkout with Tunisia governorates dropdown and coupon support.
-- Payment: Cash on Delivery with "Open the package first, then pay" messaging.
+- Payment: Cash on Delivery.
 - **Email notifications** — order confirmations, shipping updates, and delivery notifications.
-- Optional account creation after guest checkout for returning customers.
+- Optional account creation after guest checkout.
+- **Newsletter signup** — email subscription form in the site footer.
+
+### Product Variants
+
+- **Color options** — admin defines available color swatches per product; customers pick on the product page.
+- **Quality tiers** — Standard, 180g, 220g, and 250g; admin enables per product.
+- Color and quality restrictions: for 220g and 250g tiers only White and Black are offered.
+- Size variants with per-size stock tracking (XS–XXL and numeric sizes).
 
 ### Admin Features
 
 - Dashboard metrics for revenue, orders, and top products.
-- Product and category CRUD.
+- Product CRUD with image gallery, size/color/quality management, badges, and sale pricing.
+- Category CRUD.
 - Order and payment status updates with **automatic email notifications**.
 - Customer management (includes guest customer records).
-- Coupon CRUD and application support in checkout.
+- Coupon CRUD and application support at checkout.
+- **Newsletter subscribers list** — view all emails collected via the footer form.
 - Store and account settings management.
 
 ### Email System
@@ -48,33 +60,24 @@ This project targets fashion retail use cases and provides:
 - **Password reset** — secure token-based password recovery.
 - Configurable drivers: SMTP (Gmail), PHP mail(), or log (development).
 
-### Security and Reliability
+### Security
 
-- CSRF protection for state-changing requests.
-- PDO prepared statements to reduce SQL injection risk.
+- CSRF protection on all state-changing requests.
+- PDO prepared statements throughout.
 - Output escaping for XSS mitigation.
-- Rate limiting for login and password reset actions.
+- Rate limiting for login and password reset.
 - Secure password hashing and environment-based configuration.
-
-### Recent Improvements
-
-- Guest checkout flow with optional post-purchase account creation.
-- Email notification system with Gmail SMTP support.
-- Tunisia governorates dropdown for shipping addresses.
-- Guest order tracking via secure token URLs.
-- Unified price formatting with centralized helper (TND currency).
-- Flat shipping fee configuration set to 8.00 TND.
-- CI/CD deployment pipeline with GitHub Actions.
+- Apache rules block direct access to `.env`, `.sql`, `.log`, and `.git`.
 
 ## Tech Stack
 
 | Layer | Technology |
 | --- | --- |
-| Backend | PHP 8+ (custom MVC) |
+| Backend | PHP 8+ (custom MVC, no framework) |
 | Database | MySQL / MariaDB |
-| Frontend | HTML, CSS, JavaScript |
+| Frontend | HTML, CSS, JavaScript (no build step) |
 | Server | Apache (XAMPP compatible) |
-| Email | SMTP (Gmail) / PHP mail() |
+| Email | SMTP (Gmail) / PHP mail() / log driver |
 | CI/CD | GitHub Actions + FTP Deploy |
 
 ## Installation and Setup
@@ -84,7 +87,7 @@ This project targets fashion retail use cases and provides:
 - PHP 8.0+
 - MySQL 8.0+ or MariaDB
 - Apache with mod_rewrite enabled
-- XAMPP/WAMP/LAMP (or equivalent)
+- XAMPP / WAMP / LAMP (or equivalent)
 
 ### 1. Clone Repository
 
@@ -95,137 +98,104 @@ cd clothy-outlet
 
 ### 2. Configure Environment
 
-Linux/macOS:
-
 ```bash
 cp .env.example .env
+# Edit .env with your database credentials, app URL, and mail settings
 ```
 
-Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Update values in .env:
+Key `.env` values:
 
 ```env
-# Application
 APP_URL=http://localhost/clothy/public
 
-# Database
 DB_HOST=localhost
 DB_NAME=clothy_outlet
 DB_USER=root
 DB_PASS=
 
-# Email (Gmail SMTP example)
-MAIL_DRIVER=smtp
+MAIL_DRIVER=log          # use smtp for production
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=your-email@gmail.com
-MAIL_FROM_NAME="Clothy Outlet"
 ```
-
-For development, use `MAIL_DRIVER=log` to write emails to `storage/logs/mail.log`.
 
 ### 3. Create Database and Import Schema
 
+Fresh install:
+
 ```bash
 mysql -u root -p < database/clothy_outlet.sql
+mysql -u root -p clothy_outlet < database/seed.sql   # optional sample data
 ```
 
-For existing databases, run the guest checkout migration:
+Existing database — run migrations in order:
 
 ```bash
 mysql -u root -p clothy_outlet < database/migrate_guest_checkout.sql
-```
-
-Then run the product badge migration:
-
-```bash
-mysql -u root -p clothy_outlet < database/migrate_product_badges.sql
-```
-
-Optional sample data:
-
-```bash
-mysql -u root -p clothy_outlet < database/seed.sql
+mysql -u root -p clothy_outlet < database/migrate_colors_qualities.sql
+mysql -u root -p clothy_outlet < database/migrate_subscribers.sql
 ```
 
 ### 4. Serve the App
 
-- Point Apache document root to the public directory.
-- Or run through XAMPP with project under htdocs and access via the public entry point.
+Place the project under XAMPP's `htdocs/clothy/` and access:
 
-Default local URLs:
-
-- Storefront: <http://localhost/clothy/public>
-- Admin: <http://localhost/clothy/public/admin>
+- Storefront: `http://localhost/clothy/public`
+- Admin panel: `http://localhost/clothy/public/admin`
 
 ## Usage Guide
 
 ### Customer
 
-1. Browse or search products.
-2. Add products to cart/wishlist.
-3. **Checkout as guest or sign in** — guests only need email, phone, and address.
-4. Apply coupon (optional) during checkout.
-5. Place order and receive confirmation email.
-6. **Track order** via email link (guests) or account pages (registered users).
-7. Optionally create an account after checkout for faster future orders.
+1. Use the navbar search bar for live product suggestions.
+2. Browse or filter by category and price.
+3. On the product page: select size, color, and quality tier (when applicable).
+4. Add to cart and checkout as guest or registered user.
+5. Apply a coupon code at checkout.
+6. Receive confirmation email; track the order via the link in the email.
+7. Subscribe to the newsletter via the footer form for updates.
 
 ### Admin
 
-1. Sign in from /admin.
-2. Manage catalog (products/categories).
-3. Process orders — **status changes trigger customer email notifications**.
-4. Manage customers, coupons, and settings.
+1. Sign in at `/admin`.
+2. Manage catalog — add products with color swatches, quality tiers, sizes, and images.
+3. Process orders — status changes trigger customer email notifications automatically.
+4. View newsletter subscribers at `/admin/subscribers`.
+5. Manage customers, coupons, categories, and store settings.
 
-## CI/CD Pipeline (GitHub Actions)
+## CI/CD Pipeline
 
-Deployment workflow is defined in .github/workflows/deploy.yml.
+Defined in `.github/workflows/deploy.yml`.
 
-Pipeline behavior:
+- **Trigger:** push to `main`
+- **Runner:** ubuntu-latest
+- **Deploy:** SamKirkland/FTP-Deploy-Action → InfinityFree
+- **Secrets required:** `FTP_USERNAME`, `FTP_PASSWORD`
+- **Excluded from deploy:** `.env`, `.git`, `CLAUDE.md`
 
-- Trigger: push to main.
-- Runner: ubuntu-latest.
-- Steps:
-  - Checkout repository.
-  - Deploy via SamKirkland/FTP-Deploy-Action to InfinityFree.
-- Sensitive credentials are read from repository secrets:
-  - FTP_USERNAME
-  - FTP_PASSWORD
-- Exclusions include .env and git metadata to avoid leaking secrets and unnecessary files.
-
-## Deployment Details
-
-- Current target: InfinityFree via FTP.
-- Remote directory: /htdocs/.
-- .env is intentionally excluded from deployment and should be configured directly on the host.
-- Recommended flow: merge changes into main to trigger automatic deployment.
+Configure `.env` directly on the host — it is never deployed.
 
 ## Project Structure
 
-```text
+```
 app/        controllers, models, middleware, views
-config/     app configuration and routes
-core/       MVC core classes and helpers
+config/     app configuration and route definitions
+core/       MVC framework (Router, Controller, Model, Database, View, Session)
 database/   SQL schema, migrations, and seed data
-public/     web entry point and static assets
-storage/    logs (including mail.log for development)
-uploads/    uploaded files
+public/     web entry point (index.php) and static assets
+storage/    application logs
+uploads/    user-uploaded product images
 ```
 
 ## Future Improvements
 
 - Full online payment gateway integration.
-- Automated test suite for key flows.
+- Automated test suite.
 - Product reviews and ratings.
-- API layer for mobile/client integrations.
+- Admin analytics charts (revenue over time, orders by status).
+- Shipping fee by governorate.
 
 ## Contributing
 
@@ -236,11 +206,8 @@ uploads/    uploaded files
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+MIT License. See [LICENSE](LICENSE).
 
 ## Author
 
-Seifeddine Kefi
-
-- GitHub: [@seifeddinekefi](https://github.com/seifeddinekefi)
-- LinkedIn: [Seifeddine Kefi](https://www.linkedin.com/in/seifeddine-kefi/)
+Seifeddine Kefi — [@seifeddinekefi](https://github.com/seifeddinekefi) · [LinkedIn](https://www.linkedin.com/in/seifeddine-kefi/)

@@ -19,10 +19,12 @@
 
 class ProductController extends BaseAdminController
 {
-    private Product      $productModel;
-    private Category     $categoryModel;
-    private ProductImage $imageModel;
-    private ProductSize  $sizeModel;
+    private Product        $productModel;
+    private Category       $categoryModel;
+    private ProductImage   $imageModel;
+    private ProductSize    $sizeModel;
+    private ProductColor   $colorModel;
+    private ProductQuality $qualityModel;
 
     public function __construct()
     {
@@ -31,6 +33,8 @@ class ProductController extends BaseAdminController
         $this->categoryModel = new Category();
         $this->imageModel    = new ProductImage();
         $this->sizeModel     = new ProductSize();
+        $this->colorModel    = new ProductColor();
+        $this->qualityModel  = new ProductQuality();
     }
 
     // ── Index ─────────────────────────────────────────────────
@@ -50,6 +54,8 @@ class ProductController extends BaseAdminController
         $this->adminView('products.create', [
             'pageTitle'  => 'Add Product',
             'categories' => $this->categoryModel->findAll(),
+            'colors'     => [],
+            'qualities'  => [],
         ]);
     }
 
@@ -82,6 +88,10 @@ class ProductController extends BaseAdminController
         // Handle size entries
         $this->handleSizeInputs((int) $productId);
 
+        // Handle color and quality entries
+        $this->handleColorInputs((int) $productId);
+        $this->handleQualityInputs((int) $productId);
+
         Session::flash('success', 'Product created successfully.');
         $this->redirect(url('admin/products'));
     }
@@ -102,6 +112,8 @@ class ProductController extends BaseAdminController
             'categories' => $this->categoryModel->findAll(),
             'images'     => $this->imageModel->findByProduct((int) $id),
             'sizes'      => $this->sizeModel->findByProduct((int) $id),
+            'colors'     => $this->colorModel->findByProduct((int) $id),
+            'qualities'  => $this->qualityModel->findByProduct((int) $id),
         ]);
     }
 
@@ -150,6 +162,10 @@ class ProductController extends BaseAdminController
 
         // Handle size entries
         $this->handleSizeInputs((int) $id);
+
+        // Handle color and quality entries
+        $this->handleColorInputs((int) $id);
+        $this->handleQualityInputs((int) $id);
 
         Session::flash('success', 'Product updated successfully.');
         $this->redirect(url('admin/products'));
@@ -351,6 +367,47 @@ class ProductController extends BaseAdminController
         $fullPath = BASE_PATH . '/public/' . ltrim($relativePath, '/');
         if (file_exists($fullPath) && is_file($fullPath)) {
             @unlink($fullPath);
+        }
+    }
+
+    /**
+     * Persist color swatches submitted from the product form.
+     * Expects POST: colors[0][name], colors[0][hex], …
+     * Replaces all existing colors for the product.
+     */
+    private function handleColorInputs(int $productId): void
+    {
+        $this->colorModel->deleteByProduct($productId);
+        $submitted = $_POST['colors'] ?? [];
+        if (!is_array($submitted)) {
+            return;
+        }
+        foreach (array_values($submitted) as $i => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $name = mb_substr(trim(strip_tags((string) ($row['name'] ?? ''))), 0, 50);
+            $hex  = trim((string) ($row['hex'] ?? '#000000'));
+            if ($name !== '') {
+                $this->colorModel->create($productId, $name, $hex, $i);
+            }
+        }
+    }
+
+    /**
+     * Persist quality tiers submitted from the product form.
+     * Expects POST: qualities[] = ['standard','180g','220g','250g'] (checkboxes).
+     * Replaces all existing quality entries for the product.
+     */
+    private function handleQualityInputs(int $productId): void
+    {
+        $this->qualityModel->deleteByProduct($productId);
+        $submitted = $_POST['qualities'] ?? [];
+        if (!is_array($submitted)) {
+            return;
+        }
+        foreach (array_values($submitted) as $i => $type) {
+            $this->qualityModel->create($productId, (string) $type, $i);
         }
     }
 

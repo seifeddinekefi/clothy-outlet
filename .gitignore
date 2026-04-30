@@ -1,6 +1,9 @@
 # Clothy Outlet - Git Ignore
 # ============================================================
 
+# Claude Code guidance file (local dev only)
+CLAUDE.md
+
 # Environment files (contain secrets)
 .env
 .env.local

@@ -66,13 +66,17 @@ class CheckoutController extends Controller
             if (is_array($row)) {
                 $productId = (int) ($row['product_id'] ?? 0);
                 $qty       = (int) ($row['qty'] ?? 1);
-                $size      = isset($row['size']) && $row['size'] !== '' ? (string) $row['size'] : null;
+                $size      = isset($row['size'])    && $row['size']    !== '' ? (string) $row['size']    : null;
+                $color     = isset($row['color'])   && $row['color']   !== '' ? (string) $row['color']   : null;
+                $quality   = isset($row['quality']) && $row['quality'] !== '' ? (string) $row['quality'] : null;
                 $cartKey   = (string) $key;
             } else {
                 $productId = (int) $key;
                 $qty       = (int) $row;
                 $size      = null;
-                $cartKey   = $productId . ':';
+                $color     = null;
+                $quality   = null;
+                $cartKey   = $productId . ':::';
             }
 
             if ($productId <= 0 || $qty <= 0) {
@@ -90,6 +94,8 @@ class CheckoutController extends Controller
                 'product'   => $product,
                 'qty'       => $qty,
                 'size'      => $size,
+                'color'     => $color,
+                'quality'   => $quality,
                 'lineTotal' => $lineTotal,
             ];
         }
@@ -359,7 +365,9 @@ class CheckoutController extends Controller
                 'product_id' => (int)   $item['product']->id,
                 'quantity'   => (int)   $item['qty'],
                 'price'      => (float) $item['product']->price,
-                'size'       => $item['size'] ?? null,
+                'size'       => $item['size']    ?? null,
+                'color'      => $item['color']   ?? null,
+                'quality'    => $item['quality'] ?? null,
             ];
         }
         $orderItemModel->bulkCreate((int) $orderId, $lineItems);
