@@ -3,7 +3,7 @@
 <div class="page-header">
     <div>
         <h1 class="page-header-title">Products</h1>
-        <p class="page-header-sub"><?= count($products) ?> product<?= count($products) !== 1 ? 's' : '' ?> in catalogue</p>
+        <p class="page-header-sub"><?= (int) $total ?> product<?= $total !== 1 ? 's' : '' ?> in catalogue</p>
     </div>
     <div class="page-header-actions">
         <a href="<?= url('admin/products/create') ?>" class="btn btn-primary btn-sm">
@@ -12,6 +12,17 @@
         </a>
     </div>
 </div>
+
+<!-- ── Search ───────────────────────────────────────────────── -->
+<form method="GET" action="<?= url('admin/products') ?>" class="search-bar">
+    <input type="search" name="search" class="form-control search-input"
+           placeholder="Search by product name or SKU…"
+           value="<?= e($search) ?>">
+    <button type="submit" class="btn btn-outline btn-sm">Search</button>
+    <?php if ($search !== ''): ?>
+        <a href="<?= url('admin/products') ?>" class="btn btn-outline btn-sm">Clear</a>
+    <?php endif; ?>
+</form>
 
 <div class="card">
     <?php if (empty($products)): ?>
@@ -110,5 +121,19 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- ── Pagination ─────────────────────────────────────── -->
+        <?php if ($pages > 1): ?>
+            <nav class="pagination" aria-label="Products pagination">
+                <?php for ($i = 1; $i <= $pages; $i++): ?>
+                    <?php $qs = http_build_query(array_filter(['page' => $i, 'search' => $search])); ?>
+                    <a href="<?= url('admin/products') ?>?<?= $qs ?>"
+                       class="page-link <?= $i === $page ? 'page-link--active' : '' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+            </nav>
+        <?php endif; ?>
+
     <?php endif; ?>
 </div>

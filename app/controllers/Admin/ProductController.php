@@ -41,9 +41,18 @@ class ProductController extends BaseAdminController
 
     public function index(): void
     {
+        $search = trim($_GET['search'] ?? '');
+        $page   = max(1, (int) ($_GET['page'] ?? 1));
+
+        $result = $this->productModel->paginateAdmin($page, 20, $search);
+
         $this->adminView('products.index', [
             'pageTitle' => 'Products',
-            'products'  => $this->productModel->findAll(),
+            'products'  => $result['data'],
+            'page'      => $result['page'],
+            'pages'     => $result['pages'],
+            'total'     => $result['total'],
+            'search'    => $search,
         ]);
     }
 

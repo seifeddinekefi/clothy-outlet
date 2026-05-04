@@ -360,6 +360,7 @@ class CheckoutController extends Controller
             'total_price'    => $total,
             'payment_method' => $paymentMethod,
             'notes'          => $notes !== '' ? $notes : null,
+            'coupon_code'    => $coupon ? $coupon['code'] : null,
             'tracking_token' => $trackingToken,
         ]);
 

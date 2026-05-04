@@ -96,7 +96,11 @@ class Coupon extends Model
     public function findAll(): array
     {
         return $this->db->select(
-            "SELECT * FROM `{$this->table}` ORDER BY `created_at` DESC"
+            "SELECT c.*, COUNT(o.id) AS usage_count
+               FROM `{$this->table}` c
+               LEFT JOIN `orders` o ON o.coupon_code = c.code
+              GROUP BY c.id
+              ORDER BY c.created_at DESC"
         );
     }
 

@@ -29,12 +29,12 @@ class OrderController extends BaseAdminController
     public function index(): void
     {
         $status = trim($_GET['status'] ?? '');
+        $search = trim($_GET['search'] ?? '');
         $page   = max(1, (int) ($_GET['page'] ?? 1));
 
-        // Only allow valid statuses as filter values
         $validStatus = in_array($status, Order::STATUSES, true) ? $status : null;
 
-        $result = $this->orderModel->paginateOrders($page, 20, $validStatus);
+        $result = $this->orderModel->paginateOrders($page, 20, $validStatus, $search);
 
         $this->adminView('orders.index', [
             'pageTitle' => 'Orders',
@@ -44,6 +44,7 @@ class OrderController extends BaseAdminController
             'total'     => $result['total'],
             'status'    => $validStatus,
             'statuses'  => Order::STATUSES,
+            'search'    => $search,
         ]);
     }
 
@@ -123,6 +124,25 @@ class OrderController extends BaseAdminController
         } catch (Exception $e) {
             error_log('Failed to send order status email: ' . $e->getMessage());
         }
+    }
+
+    // ── Update Admin Notes ────────────────────────────────────
+
+    public function updateNotes(string $id): void
+    {
+        $this->verifyCsrf();
+
+        $order = $this->orderModel->findById((int) $id);
+        if (!$order) {
+            Session::flash('error', 'Order not found.');
+            $this->redirect(url('admin/orders'));
+        }
+
+        $notes = trim($_POST['admin_notes'] ?? '');
+        $this->orderModel->updateOrder((int) $id, ['admin_notes' => $notes !== '' ? $notes : null]);
+
+        Session::flash('success', 'Admin notes saved.');
+        $this->redirect(url('admin/orders/' . (int) $id));
     }
 
     // ── Update Payment Status ───────────────────────────────

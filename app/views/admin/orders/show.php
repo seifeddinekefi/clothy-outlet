@@ -84,7 +84,7 @@
                 <tr>
                     <th>Image</th>
                     <th>Product</th>
-                    <th>Size</th>
+                    <th>Variants</th>
                     <th>Unit Price</th>
                     <th>Qty</th>
                     <th>Subtotal</th>
@@ -102,8 +102,24 @@
                                 <span class="item-no-image">—</span>
                             <?php endif; ?>
                         </td>
-                        <td><?= e($item->product_name) ?></td>
-                        <td><?= e($item->size ?? '—') ?></td>
+                        <td class="td-name"><?= e($item->product_name) ?></td>
+                        <td>
+                            <?php
+                                $variants = [];
+                                if (!empty($item->size))             $variants[] = 'Size: ' . e($item->size);
+                                if (!empty($item->selected_color))   $variants[] = 'Color: ' . e($item->selected_color);
+                                if (!empty($item->selected_quality)) $variants[] = 'Quality: ' . e($item->selected_quality);
+                            ?>
+                            <?php if ($variants): ?>
+                                <div style="display:flex;flex-direction:column;gap:0.15rem;">
+                                    <?php foreach ($variants as $v): ?>
+                                        <span class="badge badge--muted" style="font-size:0.68rem;"><?= $v ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="td-muted">—</span>
+                            <?php endif; ?>
+                        </td>
                         <td><?= formatPrice($item->price) ?></td>
                         <td><?= e($item->quantity) ?></td>
                         <td><?= formatPrice((float) $item->price * (int) $item->quantity) ?></td>
@@ -163,6 +179,23 @@
         </form>
     </div>
 
+</div>
+
+<!-- ── Admin Notes ───────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">Admin Notes</h2>
+    </div>
+    <form method="POST" action="<?= url('admin/orders/' . $order->id . '/notes') ?>"
+          style="padding:1.1rem 1.4rem;">
+        <?= csrfField() ?>
+        <div class="form-group" style="margin-bottom:0.9rem;">
+            <label for="admin_notes">Internal notes (not visible to the customer)</label>
+            <textarea id="admin_notes" name="admin_notes" class="form-control form-textarea"
+                      rows="3" maxlength="2000" placeholder="Add internal notes about this order…"><?= e($order->admin_notes ?? '') ?></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Save Notes</button>
+    </form>
 </div>
 
 <div class="form-actions">

@@ -16,9 +16,12 @@ class DashboardController extends BaseAdminController
         $productModel  = new Product();
         $orderModel    = new Order();
         $customerModel = new Customer();
+        $settingModel  = new Setting();
 
-        $recentOrders = $orderModel->paginateOrders(1, 8);
-        $revenueByDay = $orderModel->revenueByDay(30);
+        $lowStockThreshold = max(1, (int) $settingModel->get('low_stock_threshold', 10));
+
+        $recentOrders   = $orderModel->paginateOrders(1, 8);
+        $revenueByDay   = $orderModel->revenueByDay(30);
         $ordersByStatus = $orderModel->countByStatus();
 
         $this->adminView('dashboard.index', [
@@ -32,7 +35,7 @@ class DashboardController extends BaseAdminController
             'recentOrders'       => $recentOrders['data'],
             'revenueByDay'       => $revenueByDay,
             'ordersByStatus'     => $ordersByStatus,
-            'lowStockProducts'   => $productModel->lowStock(10),
+            'lowStockProducts'   => $productModel->lowStock($lowStockThreshold),
             'topSellingProducts' => $productModel->topSelling(5),
         ]);
     }

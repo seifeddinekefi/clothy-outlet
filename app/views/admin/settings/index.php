@@ -88,7 +88,7 @@ function sv(array $s, string $key, string $default = ''): string {
                 <div class="form-group">
                     <label for="currency_symbol">Currency Symbol</label>
                     <input type="text" id="currency_symbol" name="currency_symbol" class="form-control"
-                           value="<?= sv($s, 'currency_symbol', '$') ?>" maxlength="5" style="max-width:90px;">
+                           value="<?= sv($s, 'currency_symbol', 'TND') ?>" maxlength="5" style="max-width:90px;">
                     <p class="form-hint">Shown next to prices (e.g. $ € £ ¥).</p>
                 </div>
 

@@ -435,6 +435,50 @@ class Product extends Model
         );
     }
 
+    /**
+     * Paginated admin product list with optional name/SKU search.
+     *
+     * @return array{data: array<int,object>, total: int, page: int, perPage: int, pages: int}
+     */
+    public function paginateAdmin(int $page = 1, int $perPage = 20, string $search = ''): array
+    {
+        $where  = '1=1';
+        $params = [];
+
+        if ($search !== '') {
+            $where             .= ' AND (p.name LIKE :search OR p.sku LIKE :search2)';
+            $params[':search']  = '%' . $search . '%';
+            $params[':search2'] = '%' . $search . '%';
+        }
+
+        $total = (int) ($this->db->selectOne(
+            "SELECT COUNT(*) AS cnt FROM `products` p WHERE {$where}",
+            $params
+        )->cnt ?? 0);
+
+        $offset = ($page - 1) * $perPage;
+
+        $data = $this->db->select(
+            "SELECT p.*, c.name AS category_name,
+                    pi.image_path AS primary_image
+               FROM `products`         p
+               JOIN `categories`       c  ON c.id         = p.category_id
+               LEFT JOIN `product_images` pi ON pi.product_id = p.id AND pi.is_primary = 1
+              WHERE {$where}
+              ORDER BY p.created_at DESC
+              LIMIT {$perPage} OFFSET {$offset}",
+            $params
+        );
+
+        return [
+            'data'    => $data,
+            'total'   => $total,
+            'page'    => $page,
+            'perPage' => $perPage,
+            'pages'   => (int) ceil($total / $perPage),
+        ];
+    }
+
     // ── Existence / Validation ────────────────────────────────
 
     /**

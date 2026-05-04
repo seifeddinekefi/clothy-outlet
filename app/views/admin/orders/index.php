@@ -7,6 +7,20 @@
     </div>
 </div>
 
+<!-- ── Search ───────────────────────────────────────────────── -->
+<form method="GET" action="<?= url('admin/orders') ?>" class="search-bar">
+    <?php if ($status): ?>
+        <input type="hidden" name="status" value="<?= e($status) ?>">
+    <?php endif; ?>
+    <input type="search" name="search" class="form-control search-input"
+           placeholder="Search by customer name or order #…"
+           value="<?= e($search) ?>">
+    <button type="submit" class="btn btn-outline btn-sm">Search</button>
+    <?php if ($search !== ''): ?>
+        <a href="<?= url('admin/orders') ?><?= $status ? '?status=' . urlencode($status) : '' ?>" class="btn btn-outline btn-sm">Clear</a>
+    <?php endif; ?>
+</form>
+
 <!-- ── Status filter tabs ───────────────────────────────────── -->
 <div class="filter-tabs">
     <a href="<?= url('admin/orders') ?>"
@@ -82,7 +96,14 @@
         <?php if ($pages > 1): ?>
             <nav class="pagination" aria-label="Orders pagination">
                 <?php for ($i = 1; $i <= $pages; $i++): ?>
-                    <a href="<?= url('admin/orders') ?>?page=<?= $i ?><?= $status ? '&status=' . urlencode($status) : '' ?>"
+                    <?php
+                        $qs = http_build_query(array_filter([
+                            'page'   => $i,
+                            'status' => $status,
+                            'search' => $search,
+                        ]));
+                    ?>
+                    <a href="<?= url('admin/orders') ?>?<?= $qs ?>"
                         class="page-link <?= $i === $page ? 'page-link--active' : '' ?>">
                         <?= $i ?>
                     </a>

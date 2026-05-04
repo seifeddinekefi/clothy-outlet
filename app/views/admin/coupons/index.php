@@ -23,6 +23,7 @@
                     <tr>
                         <th>Code</th>
                         <th>Discount</th>
+                        <th>Used</th>
                         <th>Min Order</th>
                         <th>Validity</th>
                         <th>Status</th>
@@ -56,6 +57,13 @@
 
                             <!-- Discount -->
                             <td data-label="Discount"><strong><?= $discountDisplay ?></strong></td>
+
+                            <!-- Usage count -->
+                            <td data-label="Used">
+                                <span class="badge <?= (int)$coupon->usage_count > 0 ? 'badge--info' : 'badge--muted' ?>">
+                                    <?= (int)$coupon->usage_count ?>×
+                                </span>
+                            </td>
 
                             <!-- Min Order -->
                             <td data-label="Min Order" class="tc-hide"><?= $minOrder ?></td>

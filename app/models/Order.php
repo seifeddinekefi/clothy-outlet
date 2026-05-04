@@ -139,18 +139,27 @@ class Order extends Model
      * @param  string|null $status
      * @return array{data: array<int,object>, total: int, page: int, perPage: int, pages: int}
      */
-    public function paginateOrders(int $page = 1, int $perPage = 20, ?string $status = null): array
+    public function paginateOrders(int $page = 1, int $perPage = 20, ?string $status = null, string $search = ''): array
     {
         $where  = '1=1';
         $params = [];
 
         if ($status !== null) {
-            $where          .= ' AND o.status = :status';
+            $where            .= ' AND o.status = :status';
             $params[':status'] = $status;
         }
 
+        if ($search !== '') {
+            $where              .= ' AND (c.name LIKE :search OR CAST(o.id AS CHAR) LIKE :search2)';
+            $params[':search']   = '%' . $search . '%';
+            $params[':search2']  = '%' . $search . '%';
+        }
+
         $total = (int) ($this->db->selectOne(
-            "SELECT COUNT(*) AS cnt FROM `orders` o WHERE {$where}",
+            "SELECT COUNT(*) AS cnt
+               FROM `orders` o
+               JOIN `customers` c ON c.id = o.customer_id
+              WHERE {$where}",
             $params
         )->cnt ?? 0);
 
@@ -328,6 +337,7 @@ class Order extends Model
             'payment_method' => $data['payment_method'] ?? 'cash_on_delivery',
             'payment_status' => 'unpaid',
             'notes'          => $data['notes']          ?? null,
+            'coupon_code'    => $data['coupon_code']    ?? null,
             'tracking_token' => $data['tracking_token'] ?? null,
         ]);
     }

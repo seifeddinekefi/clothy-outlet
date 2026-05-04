@@ -49,7 +49,7 @@ class SettingsController extends BaseAdminController
         $storeEmail     = trim($_POST['store_email']          ?? '');
         $storePhone     = trim($_POST['store_phone']          ?? '');
         $storeAddress   = trim($_POST['store_address']        ?? '');
-        $currencySymbol = trim($_POST['currency_symbol']      ?? '$');
+        $currencySymbol = trim($_POST['currency_symbol']      ?? 'TND');
         $perPage        = (int) ($_POST['products_per_page']   ?? 12);
         $lowStock       = (int) ($_POST['low_stock_threshold'] ?? 10);
 
@@ -72,7 +72,7 @@ class SettingsController extends BaseAdminController
             'store_email'         => $storeEmail,
             'store_phone'         => $storePhone,
             'store_address'       => $storeAddress,
-            'currency_symbol'     => $currencySymbol ?: '$',
+            'currency_symbol'     => $currencySymbol ?: 'TND',
             'products_per_page'   => (string) $perPage,
             'low_stock_threshold' => (string) $lowStock,
         ]);

@@ -19,6 +19,8 @@
 // ─── Public Routes ──────────────────────────────────────────
 
 $router->get('/',                     'HomeController@index',   'home');
+$router->get('/contact',              'HomeController@contact',     'contact');
+$router->post('/contact',             'HomeController@sendContact', 'contact.send');
 
 // ─── Product Routes ─────────────────────────────────────────
 
@@ -144,5 +146,9 @@ $router->group(['prefix' => 'admin', 'middleware' => 'AdminMiddleware'], functio
     $router->post('/settings/password', 'Admin\SettingsController@updatePassword', 'admin.settings.password');
 
     // ── Subscribers ──────────────────────────────────────
-    $router->get('/subscribers', 'Admin\SubscriberController@index', 'admin.subscribers');
+    $router->get('/subscribers',        'Admin\SubscriberController@index',  'admin.subscribers');
+    $router->get('/subscribers/export', 'Admin\SubscriberController@export', 'admin.subscribers.export');
+
+    // ── Orders: admin notes ───────────────────────────────
+    $router->post('/orders/{id}/notes', 'Admin\OrderController@updateNotes', 'admin.orders.notes');
 });
