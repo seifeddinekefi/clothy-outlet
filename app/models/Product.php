@@ -69,9 +69,11 @@ class Product extends Model
     public function findAll(): array
     {
         return $this->db->select(
-            "SELECT p.*, c.name AS category_name
-               FROM `products`   p
-               JOIN `categories` c ON c.id = p.category_id
+            "SELECT p.*, c.name AS category_name,
+                    pi.image_path AS primary_image
+               FROM `products`         p
+               JOIN `categories`       c  ON c.id         = p.category_id
+               LEFT JOIN `product_images` pi ON pi.product_id = p.id AND pi.is_primary = 1
               ORDER BY p.created_at DESC"
         );
     }

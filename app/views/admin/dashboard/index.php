@@ -15,6 +15,24 @@ foreach ($ordersByStatus as $row) {
 }
 ?>
 
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Dashboard</h1>
+        <p class="page-header-sub">Welcome back — here's what's happening with your store</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="<?= url('admin/orders') ?>" class="btn btn-sm btn-outline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 017 7h10a5 5 0 010 10h-1"/><path d="M9 12l2 2 4-4"/></svg>
+            Orders
+        </a>
+        <a href="<?= url('admin/products/create') ?>" class="btn btn-sm btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Product
+        </a>
+    </div>
+</div>
+
 <!-- ── Stat Cards ────────────────────────────────────────────── -->
 <div class="stats-grid">
 
@@ -92,6 +110,27 @@ foreach ($ordersByStatus as $row) {
             <div class="stat-label">Total Revenue</div>
         </div>
         <div class="stat-sub">This month: <?= formatPrice($revenueThisMonth) ?></div>
+    </div>
+
+    <!-- Pending Orders -->
+    <div class="stat-card stat-card--pending">
+        <div class="stat-head">
+            <div class="stat-icon stat-icon--pending">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <?php if ($pendingOrdersCount > 0): ?>
+                <span class="stat-trend stat-trend--warn">Needs action</span>
+            <?php else: ?>
+                <span class="stat-trend stat-trend--up">All clear</span>
+            <?php endif; ?>
+        </div>
+        <div>
+            <div class="stat-value"><?= number_format(e($pendingOrdersCount)) ?></div>
+            <div class="stat-label">Pending Orders</div>
+        </div>
+        <div class="stat-sub"><a href="<?= url('admin/orders') ?>?status=pending" style="color:var(--adm-accent);text-decoration:none;">View pending orders &rarr;</a></div>
     </div>
 </div>
 
@@ -226,7 +265,7 @@ foreach ($ordersByStatus as $row) {
         <p class="empty-state">No orders yet. Go share your store!</p>
     <?php else: ?>
         <div class="table-wrap">
-            <table class="admin-table">
+            <table class="admin-table table-cards">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -241,13 +280,16 @@ foreach ($ordersByStatus as $row) {
                 <tbody>
                     <?php foreach ($recentOrders as $order): ?>
                         <tr data-href="<?= url('admin/orders/' . $order->id) ?>">
-                            <td class="td-muted">#<?= e($order->id) ?></td>
-                            <td class="td-name"><?= e($order->customer_name) ?></td>
-                            <td><?= formatPrice($order->total_price) ?></td>
-                            <td><span class="badge badge--<?= e($order->payment_status) ?>"><?= e($order->payment_status) ?></span></td>
-                            <td><span class="badge badge--<?= e($order->status) ?>"><?= e($order->status) ?></span></td>
-                            <td class="td-muted"><?= e(date('M d, Y', strtotime($order->created_at))) ?></td>
-                            <td>
+                            <td class="td-muted tc-hide">#<?= e($order->id) ?></td>
+                            <td class="tc-primary">
+                                <div class="td-name"><?= e($order->customer_name) ?></div>
+                                <div class="td-muted" style="font-size:0.73rem;">Order #<?= e($order->id) ?></div>
+                            </td>
+                            <td data-label="Total"><?= formatPrice($order->total_price) ?></td>
+                            <td data-label="Payment" class="tc-hide"><span class="badge badge--<?= e($order->payment_status) ?>"><?= e($order->payment_status) ?></span></td>
+                            <td data-label="Status"><span class="badge badge--<?= e($order->status) ?>"><?= e($order->status) ?></span></td>
+                            <td class="td-muted tc-hide"><?= e(date('M d, Y', strtotime($order->created_at))) ?></td>
+                            <td class="tc-actions">
                                 <a href="<?= url('admin/orders/' . $order->id) ?>"
                                    class="btn btn-xs btn-outline" onclick="event.stopPropagation()">View</a>
                             </td>

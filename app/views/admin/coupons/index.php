@@ -1,25 +1,32 @@
 <!-- app/views/admin/coupons/index.php -->
 
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Coupons <span class="badge-count"><?= count($coupons) ?></span></h2>
-        <a href="<?= url('admin/coupons/create') ?>" class="btn btn-primary btn-sm">+ Add Coupon</a>
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Coupons</h1>
+        <p class="page-header-sub"><?= count($coupons) ?> coupon<?= count($coupons) !== 1 ? 's' : '' ?> configured</p>
     </div>
+    <div class="page-header-actions">
+        <a href="<?= url('admin/coupons/create') ?>" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Coupon
+        </a>
+    </div>
+</div>
 
+<div class="card">
     <?php if (empty($coupons)): ?>
         <p class="empty-state">No coupons yet. <a href="<?= url('admin/coupons/create') ?>">Create one.</a></p>
     <?php else: ?>
         <div class="table-wrap">
-            <table class="admin-table">
+            <table class="admin-table table-cards">
                 <thead>
                     <tr>
                         <th>Code</th>
                         <th>Discount</th>
                         <th>Min Order</th>
-                        <th>Max Discount</th>
                         <th>Validity</th>
-                        <th>Active</th>
-                        <th>Actions</th>
+                        <th>Status</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,45 +34,62 @@
                         <?php
                         $discountDisplay = $coupon->discount_type === 'percent'
                             ? e($coupon->discount_value) . '%'
-                            : '$' . number_format($coupon->discount_value, 2);
+                            : formatPrice($coupon->discount_value);
 
                         $minOrder = $coupon->min_order_amount
-                            ? '$' . number_format($coupon->min_order_amount, 2)
+                            ? formatPrice($coupon->min_order_amount)
                             : '—';
 
-                        $maxDiscount = $coupon->max_discount_amount
-                            ? '$' . number_format($coupon->max_discount_amount, 2)
-                            : '—';
-
-                        $startsAt = $coupon->starts_at ? date('M j, Y', strtotime($coupon->starts_at)) : 'Any time';
+                        $startsAt  = $coupon->starts_at  ? date('M j, Y', strtotime($coupon->starts_at))  : 'Any time';
                         $expiresAt = $coupon->expires_at ? date('M j, Y', strtotime($coupon->expires_at)) : 'Never';
-                        $validity = $startsAt . ' — ' . $expiresAt;
 
                         $isExpired = $coupon->expires_at && strtotime($coupon->expires_at) < time();
                         ?>
-                        <tr class="<?= $isExpired ? 'row-muted' : '' ?>">
-                            <td><code class="coupon-code"><?= e($coupon->code) ?></code></td>
-                            <td><strong><?= $discountDisplay ?></strong> <small>(<?= $coupon->discount_type ?>)</small></td>
-                            <td><?= $minOrder ?></td>
-                            <td><?= $maxDiscount ?></td>
-                            <td class="td-small"><?= $validity ?></td>
-                            <td>
+                        <tr class="<?= $isExpired ? 'row-expired' : '' ?>"
+                            data-href="<?= url('admin/coupons/edit/' . $coupon->id) ?>">
+
+                            <!-- Code — primary cell -->
+                            <td class="tc-primary">
+                                <code style="font-size:0.9em;font-weight:700;letter-spacing:0.05em;"><?= e($coupon->code) ?></code>
+                                <div class="td-muted" style="font-size:0.72rem;margin-top:0.15rem;"><?= $coupon->discount_type ?></div>
+                            </td>
+
+                            <!-- Discount -->
+                            <td data-label="Discount"><strong><?= $discountDisplay ?></strong></td>
+
+                            <!-- Min Order -->
+                            <td data-label="Min Order" class="tc-hide"><?= $minOrder ?></td>
+
+                            <!-- Validity -->
+                            <td data-label="Expires" class="tc-hide" style="font-size:0.82rem;">
+                                <?= $expiresAt ?>
+                            </td>
+
+                            <!-- Status -->
+                            <td data-label="Status">
                                 <?php if ($isExpired): ?>
                                     <span class="badge badge--warning">Expired</span>
                                 <?php elseif ($coupon->is_active): ?>
-                                    <span class="badge badge--success">Yes</span>
+                                    <span class="badge badge--success">Active</span>
                                 <?php else: ?>
-                                    <span class="badge badge--danger">No</span>
+                                    <span class="badge badge--muted">Disabled</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="td-actions">
-                                <a href="<?= url('admin/coupons/edit/' . $coupon->id) ?>" class="btn btn-xs btn-outline">Edit</a>
-                                <form method="POST" action="<?= url('admin/coupons/delete/' . $coupon->id) ?>"
-                                    class="inline-form"
-                                    onsubmit="return confirm('Delete coupon &quot;<?= e($coupon->code) ?>&quot;?')">
-                                    <?= csrfField() ?>
-                                    <button type="submit" class="btn btn-xs btn-danger">Delete</button>
-                                </form>
+
+                            <!-- Actions -->
+                            <td class="tc-actions">
+                                <div class="table-actions">
+                                    <a href="<?= url('admin/coupons/edit/' . $coupon->id) ?>"
+                                       class="btn btn-xs btn-outline"
+                                       onclick="event.stopPropagation()">Edit</a>
+                                    <form method="POST" action="<?= url('admin/coupons/delete/' . $coupon->id) ?>"
+                                          class="inline-form"
+                                          onclick="event.stopPropagation()"
+                                          onsubmit="return confirm('Delete coupon &quot;<?= e($coupon->code) ?>&quot;?')">
+                                        <?= csrfField() ?>
+                                        <button type="submit" class="btn btn-xs btn-danger">Del</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -74,27 +98,3 @@
         </div>
     <?php endif; ?>
 </div>
-
-<style>
-    .coupon-code {
-        font-size: 0.9em;
-        background: var(--bg-tertiary, #f5f5f5);
-        padding: 0.25em 0.5em;
-        border-radius: 4px;
-        font-weight: 600;
-    }
-
-    .row-muted {
-        opacity: 0.6;
-    }
-
-    .td-small {
-        font-size: 0.85em;
-        color: var(--text-muted, #666);
-    }
-
-    .badge--warning {
-        background: #f59e0b;
-        color: white;
-    }
-</style>

@@ -576,7 +576,7 @@ body {
 /* ── Stats Grid ─────────────────────────────────────────────── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
   gap: 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -1374,6 +1374,228 @@ code {
   border: 0;
 }
 
+/* ── Page Header ────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.page-header-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--adm-text);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+.page-header-sub {
+  font-size: 0.77rem;
+  color: var(--adm-text-muted);
+  margin-top: 0.25rem;
+  font-weight: 400;
+}
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* ── Sidebar: Nav Group Labels ──────────────────────────────── */
+.nav-group-label {
+  font-size: 0.585rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: rgba(255, 255, 255, 0.2);
+  padding: 0.9rem 0.9rem 0.25rem;
+  list-style: none;
+  user-select: none;
+}
+.nav-divider {
+  height: 1px;
+  background: var(--adm-sidebar-border);
+  margin: 0.4rem 0.75rem;
+  list-style: none;
+}
+
+/* ── Breadcrumbs ─────────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  color: var(--adm-text-muted);
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.breadcrumb a {
+  color: var(--adm-text-muted);
+  text-decoration: none;
+  transition: color var(--adm-transition);
+}
+.breadcrumb a:hover {
+  color: var(--adm-accent);
+}
+.breadcrumb-sep {
+  opacity: 0.35;
+}
+.breadcrumb-current {
+  color: var(--adm-text-2);
+  font-weight: 500;
+}
+
+/* ── Topbar: View Store link ─────────────────────────────────── */
+.topbar-store-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+  text-decoration: none;
+  padding: 0.38rem 0.75rem;
+  border-radius: 7px;
+  border: 1px solid var(--adm-border);
+  white-space: nowrap;
+  transition: all var(--adm-transition);
+}
+.topbar-store-link:hover {
+  color: var(--adm-accent-dk);
+  border-color: rgba(196, 169, 122, 0.4);
+  background: var(--adm-accent-lt);
+}
+
+/* ── Expired / muted table rows ─────────────────────────────── */
+.row-expired {
+  opacity: 0.55;
+}
+
+/* ── Product name cell (thumbnail + text side by side) ─────── */
+.prod-name-cell {
+  display: flex !important;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.prod-name-text {
+  min-width: 0;
+  overflow: hidden;
+}
+.prod-name-text .td-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Table product thumbnail ─────────────────────────────────── */
+.td-thumb-col {
+  width: 52px;
+  padding-right: 0.4rem !important;
+}
+.table-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid var(--adm-border);
+  display: block;
+}
+.table-no-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 7px;
+  background: #f1f5f9;
+  border: 1px dashed var(--adm-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--adm-text-muted);
+}
+
+/* ── Responsive card-style table (mobile) ───────────────────── */
+/* Add class="table-cards" + data-label on each <td> to enable  */
+@media (max-width: 600px) {
+  .table-cards thead {
+    display: none;
+  }
+  .table-cards tbody tr {
+    display: block;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--adm-border);
+    cursor: inherit;
+  }
+  .table-cards tbody tr:last-child {
+    border-bottom: none;
+  }
+  .table-cards tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.2rem 0;
+    border: none;
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .table-cards tbody td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--adm-text-muted);
+    flex: 0 0 72px;
+    margin-right: 0.5rem;
+  }
+  /* Primary cell: product/order name — no label, stacks vertically */
+  .table-cards tbody td.tc-primary {
+    padding-bottom: 0.45rem;
+    margin-bottom: 0.3rem;
+    border-bottom: 1px solid #f1f5f9;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+  /* Exception: product name cell has thumbnail + text in a row */
+  .table-cards tbody td.tc-primary.prod-name-cell {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .table-cards tbody td.tc-primary::before {
+    display: none;
+  }
+  /* Thumbnail cell */
+  .table-cards tbody td.tc-thumb {
+    padding-bottom: 0.45rem;
+    margin-bottom: 0.3rem;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 0.65rem;
+    justify-content: flex-start;
+  }
+  .table-cards tbody td.tc-thumb::before {
+    display: none;
+  }
+  /* Actions cell */
+  .table-cards tbody td.tc-actions {
+    padding-top: 0.5rem;
+    margin-top: 0.3rem;
+    border-top: 1px solid #f1f5f9;
+    justify-content: flex-end;
+    gap: 0.4rem;
+  }
+  .table-cards tbody td.tc-actions::before {
+    display: none;
+  }
+  /* Hide unimportant columns on mobile */
+  .table-cards tbody td.tc-hide {
+    display: none;
+  }
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (min-width: 769px) {
   .d-sm {
@@ -1445,7 +1667,13 @@ code {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 520px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+@media (max-width: 380px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -1548,6 +1776,23 @@ code {
     min-width: 0;
     flex: 1 1 100%;
   }
+
+  /* Page header tighter on small screens */
+  .page-header {
+    margin-bottom: 1.25rem;
+  }
+  .page-header-title {
+    font-size: 1.1rem;
+  }
+  .page-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Hide topbar store link text, keep icon */
+  .topbar-store-link span {
+    display: none;
+  }
 }
 
 /* ── Very Small Screens (≤420px) ────────────────────────────── */
@@ -1558,6 +1803,10 @@ code {
   }
   .topbar-title {
     font-size: 0.88rem;
+  }
+  /* Hide store link on very small screens — not enough room */
+  .topbar-store-link {
+    display: none;
   }
   .admin-content {
     padding: 0.85rem;

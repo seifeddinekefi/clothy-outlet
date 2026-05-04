@@ -15,6 +15,16 @@
     <span class="topbar-title"><?= e($pageTitle ?? 'Dashboard') ?></span>
 
     <div class="topbar-right">
+        <!-- View storefront -->
+        <a href="<?= url('') ?>" class="topbar-store-link" target="_blank" rel="noopener" title="View storefront">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            <span>Store</span>
+        </a>
+
         <!-- Quick action shortcut -->
         <a href="<?= url('admin/products/create') ?>" class="topbar-quick-btn" title="Add new product">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

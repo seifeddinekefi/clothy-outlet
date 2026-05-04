@@ -27,6 +27,7 @@ function _sidebar_active(string $prefix, string $uri): string
 
     <nav class="sidebar-nav" role="navigation" aria-label="Admin navigation">
         <ul>
+            <!-- Main -->
             <li class="<?= _sidebar_active('/admin/dashboard', $_uri) ?: (_sidebar_active('/admin', $_uri) && !str_starts_with($_uri, '/admin/products') && !str_starts_with($_uri, '/admin/categories') && !str_starts_with($_uri, '/admin/orders') && !str_starts_with($_uri, '/admin/customers') && !str_starts_with($_uri, '/admin/coupons') && !str_starts_with($_uri, '/admin/settings') && !str_starts_with($_uri, '/admin/subscribers') ? 'active' : '') ?>">
                 <a href="<?= url('admin') ?>">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -38,6 +39,10 @@ function _sidebar_active(string $prefix, string $uri): string
                     Dashboard
                 </a>
             </li>
+
+            <!-- Catalog -->
+            <li class="nav-group-label" role="presentation">Catalog</li>
+
             <li class="<?= _sidebar_active('/admin/products', $_uri) ?>">
                 <a href="<?= url('admin/products') ?>">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -56,6 +61,10 @@ function _sidebar_active(string $prefix, string $uri): string
                     Categories
                 </a>
             </li>
+
+            <!-- Commerce -->
+            <li class="nav-group-label" role="presentation">Commerce</li>
+
             <li class="<?= _sidebar_active('/admin/orders', $_uri) ?>">
                 <a href="<?= url('admin/orders') ?>">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -91,6 +100,10 @@ function _sidebar_active(string $prefix, string $uri): string
                     Coupons
                 </a>
             </li>
+
+            <!-- Admin -->
+            <li class="nav-group-label" role="presentation">Admin</li>
+
             <li class="<?= _sidebar_active('/admin/subscribers', $_uri) ?>">
                 <a href="<?= url('admin/subscribers') ?>">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
