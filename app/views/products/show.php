@@ -635,17 +635,25 @@ if ($_discount <= 0 && $_hasComparePrice && is_object($_p)) {
           <?php if (!empty($_qualities)): ?>
             <?php
             $HIGH_QUALITY_TYPES = ['220g', '250g'];
-            $firstQuality = $_qualities[0]->quality_type ?? '';
+            // Build formatted price map for JS (only qualities with a price override)
+            $_qualityPriceFmtMap = [];
+            foreach ($_qualities as $q) {
+                if (isset($q->price) && $q->price !== null && (float)$q->price > 0) {
+                    $_qualityPriceFmtMap[$q->quality_type] = formatPrice($q->price);
+                }
+            }
             ?>
             <div class="pd-label">Select Quality</div>
             <div class="pd-quality-grid" id="qualityGrid">
               <?php foreach ($_qualities as $qi => $q): ?>
+                <?php $qPriceFmt = $_qualityPriceFmtMap[$q->quality_type] ?? null; ?>
                 <label class="pd-quality">
                   <input type="radio" name="quality" value="<?= e($q->quality_type) ?>"
                          id="quality_<?= e($q->quality_type) ?>"
+                         data-price-fmt="<?= e($qPriceFmt ?? '') ?>"
                          <?= $qi === 0 ? 'checked' : '' ?>
                          onchange="onQualityChange(this.value)">
-                  <span><?= e($q->quality_type) ?></span>
+                  <span><?= e($q->quality_type) ?><?= $qPriceFmt ? '<small style="display:block;font-size:.7rem;opacity:.8">' . e($qPriceFmt) . '</small>' : '' ?></span>
                 </label>
               <?php endforeach; ?>
             </div>
@@ -814,6 +822,36 @@ function toggleAccordion(btn) {
   item.classList.toggle('open');
 }
 
+// ── Quality price update (runs always, no color dependency) ──────
+(function() {
+  var qualityPriceFmtMap = <?= json_encode($_qualityPriceFmtMap ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+  var basePriceFmt       = <?= json_encode(formatPrice($_p->price), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+  var priceEl            = document.querySelector('.pd-price');
+  var priceOrigEl        = document.querySelector('.pd-price-original');
+  var priceDiscEl        = document.querySelector('.pd-price-discount');
+
+  function updatePriceDisplay(qualityType) {
+    if (!priceEl) return;
+    var fmt = qualityPriceFmtMap[qualityType];
+    if (fmt) {
+      priceEl.textContent = fmt;
+      if (priceOrigEl) priceOrigEl.style.display = 'none';
+      if (priceDiscEl) priceDiscEl.style.display = 'none';
+    } else {
+      priceEl.textContent = basePriceFmt;
+      if (priceOrigEl) priceOrigEl.style.display = '';
+      if (priceDiscEl) priceDiscEl.style.display = '';
+    }
+  }
+
+  var checkedQualityInit = document.querySelector('input[name="quality"]:checked');
+  if (checkedQualityInit) {
+    updatePriceDisplay(checkedQualityInit.value);
+  }
+
+  window._updatePriceDisplay = updatePriceDisplay;
+})();
+
 // ── Color & Quality logic ─────────────────────────────────────
 (function() {
   var productColors  = <?= $colorsJson ?? '[]' ?>;
@@ -825,11 +863,10 @@ function toggleAccordion(btn) {
   var colorInput     = document.getElementById('colorInput');
   var colorNameLabel = document.getElementById('selectedColorName');
 
-  if (!colorPicker) return; // no color section on this product
-
   function renderColors(colors) {
+    if (!colorPicker) return;
     colorPicker.innerHTML = '';
-    colorInput.value = '';
+    if (colorInput) colorInput.value = '';
     if (!colors || colors.length === 0) return;
 
     colors.forEach(function(c, i) {
@@ -842,16 +879,15 @@ function toggleAccordion(btn) {
       radio.value = c.name;
       if (i === 0) {
         radio.checked = true;
-        colorInput.value = c.name;
+        if (colorInput) colorInput.value = c.name;
         if (colorNameLabel) colorNameLabel.textContent = c.name;
       }
       radio.addEventListener('change', function() {
-        colorInput.value = c.name;
+        if (colorInput) colorInput.value = c.name;
         if (colorNameLabel) colorNameLabel.textContent = c.name;
       });
       var swatch = document.createElement('span');
       swatch.className = 'pd-color-swatch';
-      // White needs a border so it's visible on white background
       swatch.style.background = c.hex;
       if (c.hex === '#ffffff' || c.name.toLowerCase() === 'white') {
         swatch.style.outlineColor = '#ccc';
@@ -863,6 +899,7 @@ function toggleAccordion(btn) {
   }
 
   function onQualityChange(qualityType) {
+    if (window._updatePriceDisplay) window._updatePriceDisplay(qualityType);
     if (HIGH_QUALITY.indexOf(qualityType) !== -1) {
       renderColors(HIGH_Q_COLORS);
     } else {
@@ -871,12 +908,11 @@ function toggleAccordion(btn) {
   }
 
   // Wire quality radios
-  var qualityRadios = document.querySelectorAll('input[name="quality"]');
-  qualityRadios.forEach(function(r) {
+  document.querySelectorAll('input[name="quality"]').forEach(function(r) {
     r.addEventListener('change', function() { onQualityChange(this.value); });
   });
 
-  // Initial render based on first checked quality (or product colors if no qualities)
+  // Initial render
   var checkedQuality = document.querySelector('input[name="quality"]:checked');
   if (checkedQuality) {
     onQualityChange(checkedQuality.value);

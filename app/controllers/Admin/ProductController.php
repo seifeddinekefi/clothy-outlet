@@ -397,17 +397,27 @@ class ProductController extends BaseAdminController
     /**
      * Persist quality tiers submitted from the product form.
      * Expects POST: qualities[] = ['standard','180g','220g','250g'] (checkboxes).
+     * Expects POST: quality_prices[standard] = '25.00', etc. (optional per-quality prices).
      * Replaces all existing quality entries for the product.
      */
     private function handleQualityInputs(int $productId): void
     {
         $this->qualityModel->deleteByProduct($productId);
         $submitted = $_POST['qualities'] ?? [];
+        $priceMap  = $_POST['quality_prices'] ?? [];
         if (!is_array($submitted)) {
             return;
         }
         foreach (array_values($submitted) as $i => $type) {
-            $this->qualityModel->create($productId, (string) $type, $i);
+            $type     = (string) $type;
+            $priceRaw = trim((string) ($priceMap[$type] ?? ''));
+            if ($priceRaw !== '') {
+                $price = filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
+                $price = ($price !== false && $price >= 0) ? $price : null;
+            } else {
+                $price = null;
+            }
+            $this->qualityModel->create($productId, $type, $i, $price);
         }
     }
 

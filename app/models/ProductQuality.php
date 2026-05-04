@@ -43,9 +43,10 @@ class ProductQuality extends Model
     /**
      * Create a quality tier entry.
      *
+     * @param  float|null $price  Override price; null falls back to product base price.
      * @return string|false  New row id, or false on failure / unknown type.
      */
-    public function create(int $productId, string $qualityType, int $sortOrder = 0): string|false
+    public function create(int $productId, string $qualityType, int $sortOrder = 0, ?float $price = null): string|false
     {
         if (!in_array($qualityType, self::TYPES, true)) {
             return false;
@@ -53,8 +54,22 @@ class ProductQuality extends Model
         return $this->insert([
             'product_id'   => $productId,
             'quality_type' => $qualityType,
+            'price'        => $price,
             'sort_order'   => $sortOrder,
         ]);
+    }
+
+    /**
+     * Return the quality record for a specific product + type combination.
+     */
+    public function findByProductAndType(int $productId, string $qualityType): mixed
+    {
+        return $this->db->selectOne(
+            "SELECT * FROM `product_qualities`
+              WHERE `product_id` = :pid AND `quality_type` = :type
+              LIMIT 1",
+            [':pid' => $productId, ':type' => $qualityType]
+        );
     }
 
     /**

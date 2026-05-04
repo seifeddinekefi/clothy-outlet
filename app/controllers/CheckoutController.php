@@ -59,6 +59,7 @@ class CheckoutController extends Controller
     {
         $raw          = Session::get('cart') ?? [];
         $productModel = new Product();
+        $qualityModel = new ProductQuality();
         $items        = [];
         $subtotal     = 0;
 
@@ -87,7 +88,16 @@ class CheckoutController extends Controller
             if (!$product) {
                 continue;
             }
-            $lineTotal = (float) $product->price * $qty;
+
+            $unitPrice = (float) $product->price;
+            if ($quality !== null) {
+                $qRecord = $qualityModel->findByProductAndType($productId, $quality);
+                if ($qRecord && isset($qRecord->price) && $qRecord->price !== null) {
+                    $unitPrice = (float) $qRecord->price;
+                }
+            }
+
+            $lineTotal = $unitPrice * $qty;
             $subtotal += $lineTotal;
             $items[]   = [
                 'key'       => $cartKey,
@@ -96,6 +106,7 @@ class CheckoutController extends Controller
                 'size'      => $size,
                 'color'     => $color,
                 'quality'   => $quality,
+                'unitPrice' => $unitPrice,
                 'lineTotal' => $lineTotal,
             ];
         }
@@ -364,7 +375,7 @@ class CheckoutController extends Controller
             $lineItems[] = [
                 'product_id' => (int)   $item['product']->id,
                 'quantity'   => (int)   $item['qty'],
-                'price'      => (float) $item['product']->price,
+                'price'      => (float) ($item['unitPrice'] ?? $item['product']->price),
                 'size'       => $item['size']    ?? null,
                 'color'      => $item['color']   ?? null,
                 'quality'    => $item['quality'] ?? null,

@@ -167,24 +167,43 @@ if ($_isOnSaleDefault && (float) ($product->price ?? 0) > 0) {
                     <p class="form-hint">Set stock quantity > 0 to make a size available. Set to 0 to hide that size.</p>
                 </div>
 
-                <!-- Quality tiers -->
+                <!-- Quality tiers with per-quality prices -->
                 <?php
                 $savedQualityTypes  = array_map(fn($q) => $q->quality_type, $qualities ?? []);
                 $submittedQualities = $_POST['qualities'] ?? null;
                 $activeQualities    = $submittedQualities !== null ? $submittedQualities : $savedQualityTypes;
+
+                // Build price map: quality_type => price (from DB or POST)
+                $savedQualPriceMap = [];
+                foreach ($qualities ?? [] as $q) {
+                    if (isset($q->price) && $q->price !== null) {
+                        $savedQualPriceMap[$q->quality_type] = $q->price;
+                    }
+                }
+                $activePriceMap = $submittedQualities !== null
+                    ? ($_POST['quality_prices'] ?? [])
+                    : $savedQualPriceMap;
                 ?>
                 <div class="form-group">
-                    <label>Available Qualities</label>
-                    <div class="quality-checkbox-group">
+                    <label>Available Qualities &amp; Prices</label>
+                    <div class="quality-price-list">
                         <?php foreach (['standard' => 'Standard', '180g' => '180g', '220g' => '220g', '250g' => '250g'] as $val => $label): ?>
-                            <label class="checkbox-label quality-check">
-                                <input type="checkbox" name="qualities[]" value="<?= $val ?>"
-                                    <?= in_array($val, $activeQualities, true) ? 'checked' : '' ?>>
-                                <?= $label ?>
-                            </label>
+                            <div class="quality-price-row">
+                                <label class="checkbox-label quality-check">
+                                    <input type="checkbox" name="qualities[]" value="<?= $val ?>"
+                                        <?= in_array($val, $activeQualities, true) ? 'checked' : '' ?>>
+                                    <span><?= $label ?></span>
+                                </label>
+                                <input type="number"
+                                       name="quality_prices[<?= $val ?>]"
+                                       class="form-control quality-price-input"
+                                       value="<?= e($activePriceMap[$val] ?? '') ?>"
+                                       min="0" step="0.01"
+                                       placeholder="Base price">
+                            </div>
                         <?php endforeach; ?>
                     </div>
-                    <p class="form-hint">Leave all unchecked if quality is not a factor. For 220g and 250g only White &amp; Black colors are shown to customers.</p>
+                    <p class="form-hint">Set a custom price per quality tier, or leave blank to use the base product price. For 220g and 250g, only White &amp; Black colors are shown.</p>
                 </div>
 
                 <!-- Color swatches -->
@@ -251,8 +270,10 @@ if ($_isOnSaleDefault && (float) ($product->price ?? 0) > 0) {
 
 <?php $view->startSection('scripts') ?>
 <style>
-.quality-checkbox-group { display:flex; flex-wrap:wrap; gap:.75rem; }
-.quality-check { display:flex; align-items:center; gap:.35rem; font-size:.875rem; }
+.quality-price-list { display:flex; flex-direction:column; gap:.55rem; }
+.quality-price-row { display:flex; align-items:center; gap:.75rem; }
+.quality-price-row .quality-check { flex:0 0 110px; margin-bottom:0; }
+.quality-price-input { flex:1; max-width:160px; }
 .color-list { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.6rem; }
 .color-row { display:flex; align-items:center; gap:.4rem; background:#f8f8f8; border:1px solid #e0e0e0; border-radius:8px; padding:.3rem .5rem .3rem .4rem; }
 .color-swatch { width:22px; height:22px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex-shrink:0; }

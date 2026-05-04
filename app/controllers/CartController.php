@@ -101,12 +101,21 @@ class CartController extends Controller
         $subtotal     = 0;
         $cartRows     = $this->normalizeCart($raw);
 
+        $qualityModel = new ProductQuality();
+
         foreach ($cartRows as $row) {
             $product = $productModel->findByIdWithImage((int) $row['product_id']);
             if (!$product) {
                 continue;
             }
-            $lineTotal  = (float) $product->price * (int) $row['qty'];
+            $unitPrice = (float) $product->price;
+            if (!empty($row['quality'])) {
+                $qRecord = $qualityModel->findByProductAndType((int) $row['product_id'], $row['quality']);
+                if ($qRecord && isset($qRecord->price) && $qRecord->price !== null) {
+                    $unitPrice = (float) $qRecord->price;
+                }
+            }
+            $lineTotal  = $unitPrice * (int) $row['qty'];
             $subtotal  += $lineTotal;
             $items[]    = [
                 'key'       => $row['key'],
@@ -115,6 +124,7 @@ class CartController extends Controller
                 'size'      => $row['size'],
                 'color'     => $row['color'],
                 'quality'   => $row['quality'],
+                'unitPrice' => $unitPrice,
                 'lineTotal' => $lineTotal,
             ];
         }

@@ -467,7 +467,7 @@ $_total    = $_subtotal + $_shipping;
                     <?= htmlspecialchars($p->name) ?>
                   </a>
                   <span class="cart-item-meta">
-                    <?= formatPrice($p->price) ?> each
+                    <?= formatPrice($item['unitPrice'] ?? $p->price) ?> each
                     <?php if (!empty($item['size'])): ?> &middot; Size: <?= htmlspecialchars($item['size']) ?><?php endif ?>
                     <?php if (!empty($item['color'])): ?> &middot; Color: <?= htmlspecialchars($item['color']) ?><?php endif ?>
                     <?php if (!empty($item['quality'])): ?> &middot; Quality: <?= htmlspecialchars($item['quality']) ?><?php endif ?>

@@ -7,7 +7,10 @@
       "Bash(echo \"exit: $?\")",
       "Bash(/c/xampp/mysql/bin/mysql.exe *)",
       "Bash(echo \"exit:$?\")",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(mysql -u root clothy_outlet)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root clothy_outlet -e \"SOURCE C:/xampp/htdocs/clothy/database/migrate_quality_prices.sql;\" 2>&1; if \\($?\\) { \"Migration OK\" } else { \"Check error above\" })",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root clothy_outlet -e \"DESCRIBE product_qualities;\" 2>&1)"
     ]
   }
 }
