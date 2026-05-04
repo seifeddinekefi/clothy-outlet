@@ -42,14 +42,18 @@ This project targets fashion retail use cases and provides:
 
 ### Admin Features
 
-- Dashboard metrics for revenue, orders, and top products.
+- Dashboard metrics for revenue, orders, top-selling products, and low-stock alerts.
+- Revenue and order-status charts on the dashboard.
 - Product CRUD with image gallery, size/color/quality management, badges, and sale pricing.
+- **Product search and pagination** — search by name or SKU; results paginated 20 per page.
 - Category CRUD.
+- Order list with **search by customer name or order ID** and status filter tabs.
 - Order and payment status updates with **automatic email notifications**.
+- **Admin internal notes** — add private notes to any order (not visible to customers).
 - Customer management (includes guest customer records).
-- Coupon CRUD and application support at checkout.
-- **Newsletter subscribers list** — view all emails collected via the footer form.
-- Store and account settings management.
+- Coupon CRUD with **live usage count** shown in the coupon list.
+- **Newsletter subscribers list** with **CSV export** for use in email tools.
+- Store and account settings management (currency defaults to TND).
 
 ### Email System
 
@@ -136,6 +140,7 @@ Existing database — run migrations in order:
 mysql -u root -p clothy_outlet < database/migrate_guest_checkout.sql
 mysql -u root -p clothy_outlet < database/migrate_colors_qualities.sql
 mysql -u root -p clothy_outlet < database/migrate_subscribers.sql
+mysql -u root -p clothy_outlet < database/migrate_order_extras.sql
 ```
 
 ### 4. Serve the App
@@ -160,10 +165,11 @@ Place the project under XAMPP's `htdocs/clothy/` and access:
 ### Admin
 
 1. Sign in at `/admin`.
-2. Manage catalog — add products with color swatches, quality tiers, sizes, and images.
-3. Process orders — status changes trigger customer email notifications automatically.
-4. View newsletter subscribers at `/admin/subscribers`.
-5. Manage customers, coupons, categories, and store settings.
+2. Manage catalog — add products with color swatches, quality tiers, sizes, and images; search by name or SKU.
+3. Process orders — search by customer name or order ID; status changes trigger customer email notifications automatically.
+4. Add internal notes to orders for team reference (not shown to the customer).
+5. Export newsletter subscribers to CSV from `/admin/subscribers`.
+6. Manage customers, coupons (with usage counts), categories, and store settings.
 
 ## CI/CD Pipeline
 
@@ -194,7 +200,6 @@ uploads/    user-uploaded product images
 - Full online payment gateway integration.
 - Automated test suite.
 - Product reviews and ratings.
-- Admin analytics charts (revenue over time, orders by status).
 - Shipping fee by governorate.
 
 ## Contributing
