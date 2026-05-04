@@ -156,14 +156,14 @@
                             legend: { display: false },
                             tooltip: {
                                 callbacks: {
-                                    label: function(ctx) { return ' $' + parseFloat(ctx.raw).toFixed(2); }
+                                    label: function(ctx) { return ' ' + parseFloat(ctx.raw).toFixed(2) + ' TND'; }
                                 }
                             }
                         },
                         scales: {
                             x: { grid: { display:false }, ticks: { maxTicksLimit:7, color:'#94a3b8', font:{size:11} } },
                             y: { grid: { color:'rgba(0,0,0,0.04)' }, ticks: { color:'#94a3b8', font:{size:11},
-                                 callback: function(v){ return '$'+v.toLocaleString(); } } }
+                                 callback: function(v){ return v.toLocaleString() + ' TND'; } } }
                         }
                     }
                 });
