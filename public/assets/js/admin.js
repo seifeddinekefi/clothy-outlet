@@ -6,21 +6,45 @@
     'use strict';
 
     // ── Sidebar toggle (mobile) ─────────────────────────────────
-    const sidebar    = document.getElementById('admin-sidebar');
-    const toggleBtn  = document.getElementById('sidebar-toggle');
-    const closeBtn   = document.getElementById('sidebar-close');
-    const overlay    = document.getElementById('sidebar-overlay');
+    const sidebar   = document.getElementById('admin-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const closeBtn  = document.getElementById('sidebar-close');
+    const overlay   = document.getElementById('sidebar-overlay');
 
-    function openSidebar()  { if (sidebar)  { sidebar.classList.add('sidebar-open');    if (overlay) overlay.style.display='block'; } }
-    function closeSidebar() { if (sidebar)  { sidebar.classList.remove('sidebar-open'); if (overlay) overlay.style.display='none';  } }
+    function openSidebar() {
+        if (!sidebar) return;
+        sidebar.classList.add('sidebar-open');
+        if (overlay) overlay.classList.add('overlay-visible');
+        document.body.classList.add('sidebar-lock');
+    }
+    function closeSidebar() {
+        if (!sidebar) return;
+        sidebar.classList.remove('sidebar-open');
+        if (overlay) overlay.classList.remove('overlay-visible');
+        document.body.classList.remove('sidebar-lock');
+    }
+    function toggleSidebar() {
+        if (sidebar && sidebar.classList.contains('sidebar-open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
 
-    if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
-    if (closeBtn)  closeBtn.addEventListener('click',  closeSidebar);
-    if (overlay)   overlay.addEventListener('click',   closeSidebar);
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+    if (overlay)  overlay.addEventListener('click',  closeSidebar);
 
+    // Close when clicking outside — use contains() so SVG children are caught
     document.addEventListener('click', function (e) {
         if (sidebar && sidebar.classList.contains('sidebar-open') &&
-            !sidebar.contains(e.target) && e.target !== toggleBtn) {
+            !sidebar.contains(e.target) &&
+            !(toggleBtn && toggleBtn.contains(e.target))) {
             closeSidebar();
         }
     });

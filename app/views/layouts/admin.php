@@ -17,8 +17,8 @@
     <!-- ── Admin Sidebar ───────────────────────────────────── -->
     <?= $view->partial('partials.admin-sidebar', ['adminUser' => $adminUser ?? null, 'pendingOrdersCount' => $pendingOrdersCount ?? 0]) ?>
 
-    <!-- Mobile overlay -->
-    <div id="sidebar-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:199;"></div>
+    <!-- Mobile overlay (shown via JS class) -->
+    <div id="sidebar-overlay"></div>
 
     <div class="admin-wrapper">
 
